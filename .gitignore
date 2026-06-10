@@ -1,0 +1,7 @@
+/logs/*
+!/logs/.keep
+.env
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
