@@ -181,6 +181,37 @@ function initTabs() {
 }
 
 // =============================================
+// MOBILE MENU FUNCTIONALITY
+// =============================================
+
+/**
+ * Initialize mobile side navigation
+ */
+function initMobileMenu() {
+    const mobileBtn = document.getElementById('mobileMenuBtn');
+    const mainNav = document.getElementById('mainNav');
+    const navOverlay = document.getElementById('navOverlay');
+
+    if (mobileBtn && mainNav && navOverlay) {
+        function toggleMenu() {
+            mobileBtn.classList.toggle('active');
+            mainNav.classList.toggle('active');
+            navOverlay.classList.toggle('active');
+            
+            // Prevent body scrolling when menu is open
+            if (mainNav.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        }
+
+        mobileBtn.addEventListener('click', toggleMenu);
+        navOverlay.addEventListener('click', toggleMenu);
+    }
+}
+
+// =============================================
 // AUTO-DISMISS FLASH MESSAGES
 // =============================================
 
@@ -197,4 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize tabs if present
     initTabs();
+    
+    // Initialize mobile menu
+    initMobileMenu();
 });

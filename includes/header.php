@@ -19,12 +19,16 @@ require_once __DIR__ . '/functions.php';
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/style.css">
 </head>
 <body>
+    <div class="nav-overlay" id="navOverlay"></div>
     <header class="main-header">
         <div class="container header-content">
             <a href="<?php echo BASE_URL; ?>/index.php" class="logo"><?php echo APP_NAME; ?></a>
             
             <?php if (isLoggedIn()): ?>
-            <nav class="main-nav">
+            <button class="mobile-menu-toggle" id="mobileMenuBtn" aria-label="Toggle navigation">
+                <span></span><span></span><span></span>
+            </button>
+            <nav class="main-nav" id="mainNav">
                 <?php if (isAdmin()): ?>
                     <a href="<?php echo BASE_URL; ?>/admin/dashboard.php">Dashboard</a>
                     <a href="<?php echo BASE_URL; ?>/admin/manage_hostels.php">Hostels</a>
