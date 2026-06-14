@@ -373,6 +373,13 @@ a:hover { color: var(--primary-800); }
     cursor: not-allowed;
     pointer-events: none;
 }
+.btn:focus-visible {
+    outline: 2px solid var(--primary-500);
+    outline-offset: 2px;
+}
+.btn:active {
+    transform: translateY(1px);
+}
 
 /* =============================================
    Components: Forms
@@ -409,6 +416,17 @@ a:hover { color: var(--primary-800); }
     outline: none;
     border-color: var(--primary-500);
     box-shadow: 0 0 0 3px var(--primary-100);
+}
+.form-input:disabled, .form-select:disabled, .form-textarea:disabled {
+    background-color: var(--neutral-100);
+    color: var(--neutral-500);
+    cursor: not-allowed;
+}
+.form-input.input-error, .form-select.input-error, .form-textarea.input-error {
+    border-color: var(--error-border);
+}
+.form-input.input-error:focus, .form-select.input-error:focus, .form-textarea.input-error:focus {
+    box-shadow: 0 0 0 3px var(--error-bg);
 }
 
 /* =============================================
