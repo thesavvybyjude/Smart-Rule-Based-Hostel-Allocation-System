@@ -8,102 +8,152 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <header class="navbar">
-        <div class="container flex items-center justify-between">
+    <div class="app-layout">
+        
+        <!-- Mobile Overlay -->
+        <div class="mobile-overlay" id="mobileOverlay"></div>
+
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
             <a href="/index.html" class="brand">
                 <i data-lucide="building-2"></i> AllocationSystem
             </a>
-            <nav class="navbar-nav">
-                <a href="/admin/dashboard.html" class="nav-link active"><i data-lucide="layout-dashboard" class="icon-sm"></i> Dashboard</a>
-                <a href="/admin/manage_hostels.html" class="nav-link"><i data-lucide="building" class="icon-sm"></i> Hostels</a>
-                <a href="/admin/manage_rooms.html" class="nav-link"><i data-lucide="door-open" class="icon-sm"></i> Rooms</a>
-                <span class="nav-link" style="color:var(--neutral-400);">|</span>
-                <button id="logoutBtn" class="btn btn-secondary btn-sm"><i data-lucide="log-out" class="icon-sm"></i> Logout</button>
+            
+            <nav class="sidebar-nav">
+                <a href="/admin/dashboard.html" class="sidebar-link active">
+                    <i data-lucide="layout-dashboard" class="icon-md"></i> Dashboard
+                </a>
+                <a href="/admin/manage_hostels.html" class="sidebar-link">
+                    <i data-lucide="building" class="icon-md"></i> Hostels
+                </a>
+                <a href="/admin/manage_rooms.html" class="sidebar-link">
+                    <i data-lucide="door-open" class="icon-md"></i> Rooms
+                </a>
+                <a href="/admin/reports.html" class="sidebar-link">
+                    <i data-lucide="bar-chart-3" class="icon-md"></i> Reports
+                </a>
+                <a href="/admin/manage_feedback.html" class="sidebar-link">
+                    <i data-lucide="message-square" class="icon-md"></i> Feedback
+                </a>
             </nav>
-        </div>
-    </header>
-    
-    <main class="container mt-32 mb-48">
-        <div class="flex items-center justify-between mb-24">
-            <div>
-                <h2>Admin Dashboard</h2>
-                <p>Manage hostel operations and allocations.</p>
-            </div>
-            <button id="runAllocationBtn" class="btn btn-primary">
-                <i data-lucide="play" class="icon-sm"></i> Run Allocation Engine
-            </button>
-        </div>
 
-        <div id="alertBox" class="alert hidden"></div>
+            <div class="sidebar-bottom">
+                <button id="logoutBtn" class="sidebar-link w-full" style="background:transparent; border:none; text-align:left; cursor:pointer;">
+                    <i data-lucide="log-out" class="icon-md"></i> Logout
+                </button>
+            </div>
+        </aside>
 
-        <div class="grid grid-cols-4 gap-16 mb-32">
-            <div class="card stat-card">
-                <div class="flex justify-between items-center">
-                    <span class="stat-title">Total Hostels</span>
-                    <i data-lucide="building" class="icon-md" style="color:var(--primary-500)"></i>
+        <!-- Main Content Area -->
+        <div class="main-wrapper">
+            <!-- Mobile Header -->
+            <header class="mobile-header">
+                <div class="flex items-center gap-12">
+                    <button id="menuToggleBtn" style="background:none; border:none; cursor:pointer;">
+                        <i data-lucide="menu" class="icon-lg"></i>
+                    </button>
+                    <span style="font-weight:600; font-size:var(--text-h5);">Admin Portal</span>
                 </div>
-                <span class="stat-value" id="statHostels">--</span>
-            </div>
-            <div class="card stat-card">
-                <div class="flex justify-between items-center">
-                    <span class="stat-title">Total Rooms</span>
-                    <i data-lucide="door-open" class="icon-md" style="color:var(--primary-500)"></i>
-                </div>
-                <span class="stat-value" id="statRooms">--</span>
-            </div>
-            <div class="card stat-card">
-                <div class="flex justify-between items-center">
-                    <span class="stat-title">Pending Students</span>
-                    <i data-lucide="users" class="icon-md" style="color:var(--warning-text)"></i>
-                </div>
-                <span class="stat-value" id="statPending">--</span>
-            </div>
-            <div class="card stat-card">
-                <div class="flex justify-between items-center">
-                    <span class="stat-title">Allocated</span>
-                    <i data-lucide="check-circle-2" class="icon-md" style="color:var(--success-text)"></i>
-                </div>
-                <span class="stat-value" id="statAllocated">--</span>
-            </div>
-        </div>
+            </header>
 
-        <h3>Quick Actions</h3>
-        <p>Navigate to specific management modules.</p>
-        
-        <div class="grid grid-cols-4 gap-16 mt-16">
-            <a href="/admin/manage_hostels.html" class="card flex flex-col items-center justify-center gap-8 text-center hover:bg-neutral-50 transition" style="text-decoration:none;">
-                <div style="background:var(--primary-50); padding:12px; border-radius:50%;">
-                    <i data-lucide="building" class="icon-lg" style="color:var(--primary-600)"></i>
+            <main class="main-content">
+                <div class="flex items-center justify-between mb-24">
+                    <div>
+                        <h2>Admin Dashboard</h2>
+                        <p>Manage hostel operations and allocations.</p>
+                    </div>
+                    <button id="runAllocationBtn" class="btn btn-primary">
+                        <i data-lucide="play" class="icon-sm"></i> Run Allocation Engine
+                    </button>
                 </div>
-                <span style="font-weight:600; color:var(--neutral-800);">Manage Hostels</span>
-            </a>
-            
-            <a href="/admin/manage_rooms.html" class="card flex flex-col items-center justify-center gap-8 text-center hover:bg-neutral-50 transition" style="text-decoration:none;">
-                <div style="background:var(--primary-50); padding:12px; border-radius:50%;">
-                    <i data-lucide="door-open" class="icon-lg" style="color:var(--primary-600)"></i>
+
+                <div id="alertBox" class="alert hidden"></div>
+
+                <div class="grid grid-cols-4 gap-16 mb-32">
+                    <div class="card stat-card">
+                        <div class="flex justify-between items-center">
+                            <span class="stat-title">Total Hostels</span>
+                            <i data-lucide="building" class="icon-md" style="color:var(--primary-500)"></i>
+                        </div>
+                        <span class="stat-value" id="statHostels">--</span>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="flex justify-between items-center">
+                            <span class="stat-title">Total Rooms</span>
+                            <i data-lucide="door-open" class="icon-md" style="color:var(--primary-500)"></i>
+                        </div>
+                        <span class="stat-value" id="statRooms">--</span>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="flex justify-between items-center">
+                            <span class="stat-title">Pending Students</span>
+                            <i data-lucide="users" class="icon-md" style="color:var(--warning-text)"></i>
+                        </div>
+                        <span class="stat-value" id="statPending">--</span>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="flex justify-between items-center">
+                            <span class="stat-title">Allocated</span>
+                            <i data-lucide="check-circle-2" class="icon-md" style="color:var(--success-text)"></i>
+                        </div>
+                        <span class="stat-value" id="statAllocated">--</span>
+                    </div>
                 </div>
-                <span style="font-weight:600; color:var(--neutral-800);">Manage Rooms</span>
-            </a>
-            
-            <a href="/admin/reports.html" class="card flex flex-col items-center justify-center gap-8 text-center hover:bg-neutral-50 transition" style="text-decoration:none;">
-                <div style="background:var(--info-bg); padding:12px; border-radius:50%;">
-                    <i data-lucide="bar-chart-3" class="icon-lg" style="color:var(--info-text)"></i>
+
+                <h3>Quick Actions</h3>
+                <p>Navigate to specific management modules.</p>
+                
+                <div class="grid grid-cols-4 gap-16 mt-16">
+                    <a href="/admin/manage_hostels.html" class="card flex flex-col items-center justify-center gap-8 text-center hover:bg-neutral-50 transition" style="text-decoration:none;">
+                        <div style="background:var(--primary-50); padding:12px; border-radius:50%;">
+                            <i data-lucide="building" class="icon-lg" style="color:var(--primary-600)"></i>
+                        </div>
+                        <span style="font-weight:600; color:var(--neutral-800);">Manage Hostels</span>
+                    </a>
+                    
+                    <a href="/admin/manage_rooms.html" class="card flex flex-col items-center justify-center gap-8 text-center hover:bg-neutral-50 transition" style="text-decoration:none;">
+                        <div style="background:var(--primary-50); padding:12px; border-radius:50%;">
+                            <i data-lucide="door-open" class="icon-lg" style="color:var(--primary-600)"></i>
+                        </div>
+                        <span style="font-weight:600; color:var(--neutral-800);">Manage Rooms</span>
+                    </a>
+                    
+                    <a href="/admin/reports.html" class="card flex flex-col items-center justify-center gap-8 text-center hover:bg-neutral-50 transition" style="text-decoration:none;">
+                        <div style="background:var(--info-bg); padding:12px; border-radius:50%;">
+                            <i data-lucide="bar-chart-3" class="icon-lg" style="color:var(--info-text)"></i>
+                        </div>
+                        <span style="font-weight:600; color:var(--neutral-800);">View Reports</span>
+                    </a>
+                    
+                    <a href="/admin/manage_feedback.html" class="card flex flex-col items-center justify-center gap-8 text-center hover:bg-neutral-50 transition" style="text-decoration:none;">
+                        <div style="background:var(--warning-bg); padding:12px; border-radius:50%;">
+                            <i data-lucide="message-square" class="icon-lg" style="color:var(--warning-text)"></i>
+                        </div>
+                        <span style="font-weight:600; color:var(--neutral-800);">View Feedback</span>
+                    </a>
                 </div>
-                <span style="font-weight:600; color:var(--neutral-800);">View Reports</span>
-            </a>
-            
-            <a href="/admin/manage_feedback.html" class="card flex flex-col items-center justify-center gap-8 text-center hover:bg-neutral-50 transition" style="text-decoration:none;">
-                <div style="background:var(--warning-bg); padding:12px; border-radius:50%;">
-                    <i data-lucide="message-square" class="icon-lg" style="color:var(--warning-text)"></i>
-                </div>
-                <span style="font-weight:600; color:var(--neutral-800);">View Feedback</span>
-            </a>
+            </main>
         </div>
-    </main>
+    </div>
 
     <script type="module">
         import { supabase } from '/js/supabase-client.js';
         lucide.createIcons();
+
+        // Mobile Menu Toggle
+        const menuBtn = document.getElementById('menuToggleBtn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobileOverlay');
+
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.add('open');
+            overlay.classList.add('active');
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        });
 
         const { data: { session } } = await supabase.auth.getSession();
         if (!session || session.user.email !== 'admin@hostel.com') window.location.href = '/index.html';
@@ -146,10 +196,10 @@
                 const data = await res.json();
                 
                 if (res.ok) {
-                    showAlert(data.message, false);
+                    showAlert(data.message || 'Allocation ran successfully!', false);
                     loadStats();
                 } else {
-                    showAlert(data.error || 'Allocation failed');
+                    showAlert(data.error || data.message || 'Allocation failed');
                 }
             } catch(e) {
                 showAlert('Network error occurred.');

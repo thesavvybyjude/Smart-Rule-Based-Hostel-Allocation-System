@@ -8,64 +8,130 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <header class="navbar">
-        <div class="container flex items-center justify-between">
+    <div class="app-layout">
+        
+        <!-- Mobile Overlay -->
+        <div class="mobile-overlay" id="mobileOverlay"></div>
+
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
             <a href="/index.html" class="brand">
                 <i data-lucide="building-2"></i> AllocationSystem
             </a>
-            <nav class="navbar-nav">
-                <a href="/student/dashboard.html" class="nav-link active"><i data-lucide="layout-dashboard" class="icon-sm"></i> Dashboard</a>
-                <a href="/student/feedback.html" class="nav-link"><i data-lucide="message-square-plus" class="icon-sm"></i> Submit Feedback</a>
-                <a href="/student/view_feedback.html" class="nav-link"><i data-lucide="history" class="icon-sm"></i> My Feedback</a>
-                <span class="nav-link" style="color:var(--neutral-400);">|</span>
-                <button id="logoutBtn" class="btn btn-secondary btn-sm"><i data-lucide="log-out" class="icon-sm"></i> Logout</button>
+            
+            <nav class="sidebar-nav">
+                <a href="/student/dashboard.html" class="sidebar-link active">
+                    <i data-lucide="layout-dashboard" class="icon-md"></i> Dashboard
+                </a>
+                <a href="/student/feedback.html" class="sidebar-link">
+                    <i data-lucide="message-square-plus" class="icon-md"></i> Submit Feedback
+                </a>
+                <a href="/student/view_feedback.html" class="sidebar-link">
+                    <i data-lucide="history" class="icon-md"></i> My Feedback
+                </a>
             </nav>
-        </div>
-    </header>
-    
-    <main class="container mt-32 mb-48">
-        <div class="flex items-center justify-between mb-24">
-            <div>
-                <h2>Student Dashboard</h2>
-                <p>Welcome back, <span id="studentName" style="font-weight:600; color:var(--neutral-900);">Student</span>.</p>
+
+            <div class="sidebar-bottom">
+                <button id="logoutBtn" class="sidebar-link w-full" style="background:transparent; border:none; text-align:left; cursor:pointer;">
+                    <i data-lucide="log-out" class="icon-md"></i> Logout
+                </button>
             </div>
-            <button id="requestBtn" class="btn btn-primary hidden">
-                <i data-lucide="send" class="icon-sm"></i> Request Hostel
-            </button>
-        </div>
+        </aside>
 
-        <div id="alertBox" class="alert hidden"></div>
+        <!-- Main Content Area -->
+        <div class="main-wrapper">
+            <!-- Mobile Header -->
+            <header class="mobile-header">
+                <div class="flex items-center gap-12">
+                    <button id="menuToggleBtn" style="background:none; border:none; cursor:pointer;">
+                        <i data-lucide="menu" class="icon-lg"></i>
+                    </button>
+                    <span style="font-weight:600; font-size:var(--text-h5);">Student Portal</span>
+                </div>
+            </header>
 
-        <div class="card text-center pb-48 pt-48" id="statusCard">
-            <i id="statusIcon" data-lucide="loader-2" class="icon-lg" style="animation: spin 2s linear infinite; width:48px; height:48px; margin-bottom:var(--space-16); color:var(--neutral-400);"></i>
-            <h2 id="statusTitle">Loading Status...</h2>
-            <p id="statusDesc" class="mt-8">Please wait while we fetch your allocation status.</p>
-        </div>
+            <main class="main-content">
+                <div class="flex items-center justify-between mb-24">
+                    <div>
+                        <h2 id="welcomeText">Welcome!</h2>
+                        <p>View your allocation status and request a hostel.</p>
+                    </div>
+                </div>
 
-        <div id="allocationDetails" class="card hidden mt-24">
-            <h3 class="mb-16 flex items-center gap-8"><i data-lucide="map-pin" class="icon-sm"></i> Allocation Details</h3>
-            <div class="grid grid-cols-2 gap-16">
-                <div>
-                    <label class="form-label">Hostel</label>
-                    <p id="allocHostel" style="font-weight:500; color:var(--neutral-900);">--</p>
+                <div id="alertBox" class="alert hidden"></div>
+
+                <div class="card mb-32" style="background: var(--neutral-900); color: white;">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span style="font-size: var(--text-small); color: var(--neutral-400); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Current Status</span>
+                            <h3 id="allocationStatusText" style="color: white; margin-top: var(--space-4); margin-bottom: 0; font-size: 32px;">Loading...</h3>
+                        </div>
+                        <i data-lucide="info" class="icon-lg" style="color: var(--neutral-400);"></i>
+                    </div>
                 </div>
-                <div>
-                    <label class="form-label">Room</label>
-                    <p id="allocRoom" style="font-weight:500; color:var(--neutral-900);">--</p>
+
+                <div class="grid grid-cols-2 gap-24 items-start">
+                    <!-- Action Card -->
+                    <div class="card" id="actionCard">
+                        <div class="empty-state">
+                            <i data-lucide="loader-2" class="icon-lg" style="animation: spin 2s linear infinite;"></i>
+                            <p class="mt-8">Loading actions...</p>
+                        </div>
+                    </div>
+
+                    <!-- Details Card -->
+                    <div class="card hidden" id="roomDetailsCard">
+                        <div class="flex items-center justify-between mb-16 pb-16" style="border-bottom: 1px solid var(--neutral-200);">
+                            <h3 style="margin: 0;">Room Details</h3>
+                            <span class="badge badge-success">Allocated</span>
+                        </div>
+                        
+                        <div class="flex items-center gap-12 mb-16">
+                            <div style="background: var(--primary-50); padding: var(--space-12); border-radius: var(--radius-md);">
+                                <i data-lucide="building" class="icon-md" style="color: var(--primary-600);"></i>
+                            </div>
+                            <div>
+                                <span style="display: block; font-size: var(--text-small); color: var(--neutral-500);">Hostel</span>
+                                <strong style="font-size: var(--text-body); color: var(--neutral-900);" id="detailHostel">--</strong>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-12">
+                            <div style="background: var(--primary-50); padding: var(--space-12); border-radius: var(--radius-md);">
+                                <i data-lucide="door-open" class="icon-md" style="color: var(--primary-600);"></i>
+                            </div>
+                            <div>
+                                <span style="display: block; font-size: var(--text-small); color: var(--neutral-500);">Room Number</span>
+                                <strong style="font-size: var(--text-body); color: var(--neutral-900);" id="detailRoom">--</strong>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="form-label">Date Allocated</label>
-                    <p id="allocDate">--</p>
-                </div>
-            </div>
+            </main>
         </div>
-    </main>
+    </div>
 
     <script type="module">
         import { supabase } from '/js/supabase-client.js';
         lucide.createIcons();
 
-        let currentUserId = null;
+        // Mobile Menu Toggle
+        const menuBtn = document.getElementById('menuToggleBtn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobileOverlay');
+
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.add('open');
+            overlay.classList.add('active');
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        });
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session || session.user.email === 'admin@hostel.com') window.location.href = '/index.html';
 
         document.getElementById('logoutBtn').addEventListener('click', async () => {
             await supabase.auth.signOut();
@@ -80,98 +146,99 @@
             lucide.createIcons();
         }
 
-        async function init() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session || session.user.email === 'admin@hostel.com') {
-                window.location.href = '/index.html';
-                return;
-            }
-            currentUserId = session.user.id;
+        const currentUserId = session.user.id;
 
+        async function loadDashboard() {
             const { data: student, error } = await supabase.from('students').select('*').eq('id', currentUserId).single();
+            
             if (error) {
                 showAlert('Error loading profile: ' + error.message);
                 return;
             }
 
-            document.getElementById('studentName').textContent = student.fullname;
-            updateStatusUI(student.allocation_status);
+            document.getElementById('welcomeText').textContent = `Welcome, ${student.fullname.split(' ')[0]}!`;
+            
+            const statusText = document.getElementById('allocationStatusText');
+            const actionCard = document.getElementById('actionCard');
+            const detailsCard = document.getElementById('roomDetailsCard');
 
-            if (student.allocation_status === 'allocated') {
-                const { data: alloc } = await supabase.from('allocations')
-                    .select('*, rooms(room_number, hostels(name))')
+            let formattedStatus = student.allocation_status.replace('_', ' ');
+            formattedStatus = formattedStatus.charAt(0).toUpperCase() + formattedStatus.slice(1);
+            statusText.textContent = formattedStatus;
+
+            if (student.allocation_status === 'not_requested') {
+                actionCard.innerHTML = `
+                    <div class="empty-state">
+                        <i data-lucide="bed"></i>
+                        <h3>Request a Hostel</h3>
+                        <p>You have not applied for a hostel yet.</p>
+                        <button id="requestBtn" class="btn btn-primary mt-16 w-full">Apply Now</button>
+                    </div>
+                `;
+                lucide.createIcons();
+                document.getElementById('requestBtn').addEventListener('click', requestHostel);
+            } 
+            else if (student.allocation_status === 'pending') {
+                actionCard.innerHTML = `
+                    <div class="empty-state">
+                        <i data-lucide="clock"></i>
+                        <h3>Application Pending</h3>
+                        <p>Your request is in the queue. Please wait for the allocation engine to run.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+            }
+            else if (student.allocation_status === 'waitlisted') {
+                actionCard.innerHTML = `
+                    <div class="empty-state">
+                        <i data-lucide="alert-circle" style="color:var(--error-text);"></i>
+                        <h3>Waitlisted</h3>
+                        <p>Unfortunately, no rooms are currently available for your category.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+            }
+            else if (student.allocation_status === 'allocated') {
+                actionCard.innerHTML = `
+                    <div class="empty-state">
+                        <i data-lucide="check-circle-2" style="color:var(--success-text);"></i>
+                        <h3>Congratulations!</h3>
+                        <p>You have been allocated a room.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+
+                // Fetch allocation details
+                const { data: allocation } = await supabase.from('allocations')
+                    .select('rooms(room_number, hostels(name))')
                     .eq('student_id', currentUserId)
                     .single();
                 
-                if (alloc) {
-                    document.getElementById('allocationDetails').classList.remove('hidden');
-                    document.getElementById('allocHostel').textContent = alloc.rooms.hostels.name;
-                    document.getElementById('allocRoom').textContent = alloc.rooms.room_number;
-                    document.getElementById('allocDate').textContent = new Date(alloc.date_allocated).toLocaleDateString();
+                if (allocation && allocation.rooms) {
+                    detailsCard.classList.remove('hidden');
+                    document.getElementById('detailHostel').textContent = allocation.rooms.hostels.name;
+                    document.getElementById('detailRoom').textContent = allocation.rooms.room_number;
                 }
             }
         }
 
-        function updateStatusUI(status) {
-            const card = document.getElementById('statusCard');
-            const icon = document.getElementById('statusIcon');
-            const title = document.getElementById('statusTitle');
-            const desc = document.getElementById('statusDesc');
-            const btn = document.getElementById('requestBtn');
-
-            card.className = 'card text-center pb-48 pt-48';
-            btn.classList.add('hidden');
-
-            if (status === 'not_requested') {
-                icon.setAttribute('data-lucide', 'inbox');
-                icon.style = "width:48px; height:48px; margin-bottom:var(--space-16); color:var(--neutral-500);";
-                title.textContent = 'Not Requested';
-                desc.textContent = 'You have not requested a hostel allocation yet.';
-                btn.classList.remove('hidden');
-            } else if (status === 'pending') {
-                card.style.borderColor = 'var(--warning-border)';
-                card.style.backgroundColor = 'var(--warning-bg)';
-                icon.setAttribute('data-lucide', 'clock');
-                icon.style = "width:48px; height:48px; margin-bottom:var(--space-16); color:var(--warning-text);";
-                title.textContent = 'Request Pending';
-                desc.textContent = 'Your request has been received and is awaiting the allocation algorithm.';
-            } else if (status === 'allocated') {
-                card.style.borderColor = 'var(--success-border)';
-                card.style.backgroundColor = 'var(--success-bg)';
-                icon.setAttribute('data-lucide', 'check-circle-2');
-                icon.style = "width:48px; height:48px; margin-bottom:var(--space-16); color:var(--success-text);";
-                title.textContent = 'Hostel Allocated';
-                desc.textContent = 'Congratulations! You have been successfully allocated a room.';
-            } else if (status === 'waitlisted') {
-                card.style.borderColor = 'var(--error-border)';
-                card.style.backgroundColor = 'var(--error-bg)';
-                icon.setAttribute('data-lucide', 'alert-circle');
-                icon.style = "width:48px; height:48px; margin-bottom:var(--space-16); color:var(--error-text);";
-                title.textContent = 'Waitlisted';
-                desc.textContent = 'Unfortunately, there were no available rooms matching your criteria.';
-            }
-            lucide.createIcons();
-        }
-
-        document.getElementById('requestBtn').addEventListener('click', async () => {
+        async function requestHostel() {
             const btn = document.getElementById('requestBtn');
             btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader-2" class="icon-sm" style="animation: spin 2s linear infinite;"></i> Requesting...`;
-            lucide.createIcons();
-
+            btn.innerHTML = `<i data-lucide="loader-2" class="icon-sm" style="animation: spin 2s linear infinite;"></i> Processing...`;
+            
             const { error } = await supabase.from('students').update({ allocation_status: 'pending' }).eq('id', currentUserId);
             if (error) {
-                showAlert(error.message);
+                showAlert('Failed to request hostel: ' + error.message);
                 btn.disabled = false;
-                btn.innerHTML = `<i data-lucide="send" class="icon-sm"></i> Request Hostel`;
-                lucide.createIcons();
+                btn.innerHTML = `Apply Now`;
             } else {
-                updateStatusUI('pending');
-                showAlert('Request submitted successfully!', false);
+                showAlert('Hostel requested successfully!', false);
+                loadDashboard();
             }
-        });
+        }
 
-        init();
+        loadDashboard();
     </script>
 </body>
 </html>

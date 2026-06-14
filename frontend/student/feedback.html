@@ -3,68 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Submit Feedback | Smart Hostel Allocation</title>
+    <title>Submit Feedback | Student</title>
     <link rel="stylesheet" href="/css/style.css">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <header class="navbar">
-        <div class="container flex items-center justify-between">
+    <div class="app-layout">
+        
+        <!-- Mobile Overlay -->
+        <div class="mobile-overlay" id="mobileOverlay"></div>
+
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
             <a href="/index.html" class="brand">
                 <i data-lucide="building-2"></i> AllocationSystem
             </a>
-            <nav class="navbar-nav">
-                <a href="/student/dashboard.html" class="nav-link"><i data-lucide="layout-dashboard" class="icon-sm"></i> Dashboard</a>
-                <a href="/student/feedback.html" class="nav-link active"><i data-lucide="message-square-plus" class="icon-sm"></i> Submit Feedback</a>
-                <a href="/student/view_feedback.html" class="nav-link"><i data-lucide="history" class="icon-sm"></i> My Feedback</a>
+            
+            <nav class="sidebar-nav">
+                <a href="/student/dashboard.html" class="sidebar-link">
+                    <i data-lucide="layout-dashboard" class="icon-md"></i> Dashboard
+                </a>
+                <a href="/student/feedback.html" class="sidebar-link active">
+                    <i data-lucide="message-square-plus" class="icon-md"></i> Submit Feedback
+                </a>
+                <a href="/student/view_feedback.html" class="sidebar-link">
+                    <i data-lucide="history" class="icon-md"></i> My Feedback
+                </a>
             </nav>
-        </div>
-    </header>
-    
-    <main class="container mt-32 mb-48">
-        <div class="card" style="max-width: 600px; margin: 0 auto;">
-            <div class="text-center mb-32 mt-16">
-                <i data-lucide="message-square" class="icon-lg mb-8" style="color:var(--primary-600); width:48px; height:48px;"></i>
-                <h2>Submit Feedback</h2>
-                <p>Report bugs, request features, or send general inquiries.</p>
-            </div>
-            
-            <div id="alertBox" class="alert hidden"></div>
-            
-            <form id="feedbackForm">
-                <div class="form-group">
-                    <label class="form-label">Subject</label>
-                    <input type="text" id="subject" class="form-input" placeholder="Brief description of the issue" required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Type</label>
-                    <select id="type" class="form-select" required>
-                        <option value="bug">Bug Report</option>
-                        <option value="error">Error/Issue</option>
-                        <option value="suggestion">Suggestion</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Message</label>
-                    <textarea id="message" class="form-textarea" placeholder="Please provide as much detail as possible..." required></textarea>
-                </div>
-                
-                <button type="submit" id="submitBtn" class="btn btn-primary w-full mt-16">
-                    <i data-lucide="send" class="icon-sm"></i> Send Feedback
+
+            <div class="sidebar-bottom">
+                <button id="logoutBtn" class="sidebar-link w-full" style="background:transparent; border:none; text-align:left; cursor:pointer;">
+                    <i data-lucide="log-out" class="icon-md"></i> Logout
                 </button>
-            </form>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-wrapper">
+            <!-- Mobile Header -->
+            <header class="mobile-header">
+                <div class="flex items-center gap-12">
+                    <button id="menuToggleBtn" style="background:none; border:none; cursor:pointer;">
+                        <i data-lucide="menu" class="icon-lg"></i>
+                    </button>
+                    <span style="font-weight:600; font-size:var(--text-h5);">Student Portal</span>
+                </div>
+            </header>
+
+            <main class="main-content">
+                <div class="flex items-center justify-between mb-24">
+                    <div>
+                        <h2>Submit Support Ticket</h2>
+                        <p>Report issues or suggest improvements directly to the administration.</p>
+                    </div>
+                </div>
+
+                <div id="alertBox" class="alert hidden"></div>
+
+                <div class="card" style="max-width: 600px;">
+                    <form id="feedbackForm">
+                        <div class="form-group">
+                            <label class="form-label">Ticket Type</label>
+                            <select id="type" class="form-input" required>
+                                <option value="bug">Report a Bug/Error</option>
+                                <option value="suggestion">Feature Suggestion</option>
+                                <option value="other">Other / General Feedback</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Subject</label>
+                            <input type="text" id="subject" class="form-input" required placeholder="Brief summary of the issue">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Message Details</label>
+                            <textarea id="message" class="form-input" rows="5" required placeholder="Please provide as much detail as possible..."></textarea>
+                        </div>
+
+                        <div class="flex items-center gap-16 mt-32">
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i data-lucide="send" class="icon-sm"></i> Submit Ticket
+                            </button>
+                            <a href="/student/view_feedback.html" class="btn btn-secondary">
+                                View My Tickets
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </main>
         </div>
-    </main>
+    </div>
 
     <script type="module">
         import { supabase } from '/js/supabase-client.js';
         lucide.createIcons();
 
+        // Mobile Menu Toggle
+        const menuBtn = document.getElementById('menuToggleBtn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobileOverlay');
+
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.add('open');
+            overlay.classList.add('active');
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        });
+
         const { data: { session } } = await supabase.auth.getSession();
         if (!session || session.user.email === 'admin@hostel.com') window.location.href = '/index.html';
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.href = '/login.html';
+        });
 
         const alertBox = document.getElementById('alertBox');
         function showAlert(msg, isError=true) {
@@ -79,29 +135,27 @@
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
             btn.innerHTML = `<i data-lucide="loader-2" class="icon-sm" style="animation: spin 2s linear infinite;"></i> Submitting...`;
-            lucide.createIcons();
-
-            const subject = document.getElementById('subject').value;
+            
             const type = document.getElementById('type').value;
+            const subject = document.getElementById('subject').value;
             const message = document.getElementById('message').value;
 
             const { error } = await supabase.from('feedback').insert([{
                 student_id: session.user.id,
-                subject,
                 type,
-                message,
-                status: 'pending'
+                subject,
+                message
             }]);
 
             if (error) {
-                showAlert(error.message);
+                showAlert('Failed to submit ticket: ' + error.message);
             } else {
-                showAlert('Feedback submitted successfully! Admins will review it soon.', false);
-                e.target.reset();
+                showAlert('Ticket submitted successfully! Administration will review it shortly.', false);
+                document.getElementById('feedbackForm').reset();
             }
-            
+
             btn.disabled = false;
-            btn.innerHTML = `<i data-lucide="send" class="icon-sm"></i> Send Feedback`;
+            btn.innerHTML = `<i data-lucide="send" class="icon-sm"></i> Submit Ticket`;
             lucide.createIcons();
         });
     </script>

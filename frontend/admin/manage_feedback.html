@@ -3,84 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Feedback | Smart Hostel Allocation</title>
+    <title>Manage Feedback | Admin</title>
     <link rel="stylesheet" href="/css/style.css">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <header class="navbar">
-        <div class="container flex items-center justify-between">
+    <div class="app-layout">
+        
+        <!-- Mobile Overlay -->
+        <div class="mobile-overlay" id="mobileOverlay"></div>
+
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
             <a href="/index.html" class="brand">
                 <i data-lucide="building-2"></i> AllocationSystem
             </a>
-            <nav class="navbar-nav">
-                <a href="/admin/dashboard.html" class="nav-link"><i data-lucide="layout-dashboard" class="icon-sm"></i> Dashboard</a>
-                <a href="/admin/manage_feedback.html" class="nav-link active"><i data-lucide="message-square" class="icon-sm"></i> Feedback</a>
+            
+            <nav class="sidebar-nav">
+                <a href="/admin/dashboard.html" class="sidebar-link">
+                    <i data-lucide="layout-dashboard" class="icon-md"></i> Dashboard
+                </a>
+                <a href="/admin/manage_hostels.html" class="sidebar-link">
+                    <i data-lucide="building" class="icon-md"></i> Hostels
+                </a>
+                <a href="/admin/manage_rooms.html" class="sidebar-link">
+                    <i data-lucide="door-open" class="icon-md"></i> Rooms
+                </a>
+                <a href="/admin/reports.html" class="sidebar-link">
+                    <i data-lucide="bar-chart-3" class="icon-md"></i> Reports
+                </a>
+                <a href="/admin/manage_feedback.html" class="sidebar-link active">
+                    <i data-lucide="message-square" class="icon-md"></i> Feedback
+                </a>
             </nav>
-        </div>
-    </header>
-    
-    <main class="container mt-32 mb-48">
-        <div class="flex items-center justify-between mb-24">
-            <div>
-                <h2>Student Feedback & Tickets</h2>
-                <p>Respond to issues, bugs, and suggestions from students.</p>
-            </div>
-        </div>
 
-        <div id="alertBox" class="alert hidden"></div>
-
-        <div class="card">
-            <div class="table-wrapper">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Student</th>
-                            <th>Subject</th>
-                            <th>Type</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="feedbackBody">
-                        <tr>
-                            <td colspan="6" class="text-center py-24">
-                                <div class="empty-state" style="padding:var(--space-24);">
-                                    <i data-lucide="loader-2" class="icon-lg" style="animation: spin 2s linear infinite;"></i>
-                                    <p class="mt-8">Loading feedback...</p>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="sidebar-bottom">
+                <button id="logoutBtn" class="sidebar-link w-full" style="background:transparent; border:none; text-align:left; cursor:pointer;">
+                    <i data-lucide="log-out" class="icon-md"></i> Logout
+                </button>
             </div>
-        </div>
-        
-        <!-- Reply Modal -->
-        <div id="replyModal" class="hidden flex items-center justify-center" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.6); z-index:100; backdrop-filter: blur(2px);">
-            <div class="card" style="width: 500px; max-width: 90%; box-shadow: var(--shadow-lg);">
-                <h3 class="mb-16 flex items-center gap-8"><i data-lucide="reply" class="icon-sm"></i> Reply to Feedback</h3>
-                <div id="fb-msg" class="mb-16" style="padding:var(--space-12); background:var(--neutral-100); border-radius:var(--radius-md); font-size:var(--text-small); color:var(--neutral-700);"></div>
-                <textarea id="admin_response" class="form-textarea w-full mb-16" placeholder="Type your response here..." required></textarea>
-                <div class="flex justify-between gap-16">
-                    <button class="btn btn-secondary w-full" onclick="closeModal()">Cancel</button>
-                    <button class="btn btn-primary w-full" onclick="submitReply()">
-                        <i data-lucide="send" class="icon-sm"></i> Resolve Ticket
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-wrapper">
+            <!-- Mobile Header -->
+            <header class="mobile-header">
+                <div class="flex items-center gap-12">
+                    <button id="menuToggleBtn" style="background:none; border:none; cursor:pointer;">
+                        <i data-lucide="menu" class="icon-lg"></i>
                     </button>
+                    <span style="font-weight:600; font-size:var(--text-h5);">Admin Portal</span>
                 </div>
-            </div>
+            </header>
+
+            <main class="main-content">
+                <div class="flex items-center justify-between mb-24">
+                    <div>
+                        <h2>Manage Feedback & Support</h2>
+                        <p>Review and respond to student tickets and bug reports.</p>
+                    </div>
+                </div>
+
+                <div id="alertBox" class="alert hidden"></div>
+
+                <div class="grid gap-16" id="feedbackList">
+                    <div class="card text-center py-24">
+                        <div class="empty-state">
+                            <i data-lucide="loader-2" class="icon-lg" style="animation: spin 2s linear infinite;"></i>
+                            <p class="mt-8">Loading feedback tickets...</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
         </div>
-    </main>
+    </div>
 
     <script type="module">
         import { supabase } from '/js/supabase-client.js';
         lucide.createIcons();
 
+        // Mobile Menu Toggle
+        const menuBtn = document.getElementById('menuToggleBtn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobileOverlay');
+
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.add('open');
+            overlay.classList.add('active');
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        });
+
         const { data: { session } } = await supabase.auth.getSession();
         if (!session || session.user.email !== 'admin@hostel.com') window.location.href = '/index.html';
 
-        let currentFbId = null;
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.href = '/login.html';
+        });
 
         const alertBox = document.getElementById('alertBox');
         function showAlert(msg, isError=true) {
@@ -91,79 +114,106 @@
         }
 
         async function loadFeedback() {
-            const { data, error } = await supabase.from('feedback').select('*, students(fullname)').order('created_at', { ascending: false });
-            const tbody = document.getElementById('feedbackBody');
+            const { data, error } = await supabase.from('feedback')
+                .select('*, students(fullname, email)')
+                .order('created_at', { ascending: false });
+                
+            const list = document.getElementById('feedbackList');
             
             if (error) {
-                tbody.innerHTML = `<tr><td colspan="6" class="color-waitlisted text-center">Error: ${error.message}</td></tr>`;
+                list.innerHTML = `<div class="card" style="color:var(--error-text);">Error: ${error.message}. Ensure Admin RLS policies are set.</div>`;
                 return;
             }
+
             if (data.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6">
-                            <div class="empty-state">
-                                <i data-lucide="inbox"></i>
-                                <h3>No Feedback</h3>
-                                <p>There are no open tickets or feedback from students.</p>
-                            </div>
-                        </td>
-                    </tr>
+                list.innerHTML = `
+                    <div class="card py-24 text-center">
+                        <div class="empty-state">
+                            <i data-lucide="inbox"></i>
+                            <h3>No Feedback Found</h3>
+                            <p>There are no active support tickets.</p>
+                        </div>
+                    </div>
                 `;
                 lucide.createIcons();
                 return;
             }
 
-            tbody.innerHTML = '';
+            list.innerHTML = '';
             data.forEach(f => {
                 let statusBadge = 'badge-neutral';
                 if(f.status === 'resolved') statusBadge = 'badge-success';
                 if(f.status === 'pending') statusBadge = 'badge-warning';
 
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${new Date(f.created_at).toLocaleDateString()}</td>
-                    <td style="font-weight:500; color:var(--neutral-900);">${f.students.fullname}</td>
-                    <td>${f.subject}</td>
-                    <td><span class="badge badge-neutral">${f.type}</span></td>
-                    <td><span class="badge ${statusBadge}">${f.status}</span></td>
-                    <td>
-                        <button class="btn btn-secondary btn-sm" onclick="openReplyModal('${f.id}', '${f.message.replace(/'/g, "\\'")}')" ${f.status === 'resolved' ? 'disabled' : ''}>
-                            <i data-lucide="${f.status === 'resolved' ? 'check' : 'reply'}" class="icon-sm"></i>
-                            ${f.status === 'resolved' ? 'Resolved' : 'Reply'}
-                        </button>
-                    </td>
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-16 pb-16" style="border-bottom:1px solid var(--neutral-200);">
+                        <div>
+                            <h4 style="margin-bottom:var(--space-4);">${f.subject}</h4>
+                            <div class="flex items-center gap-8 text-small" style="color:var(--neutral-500);">
+                                <span class="badge badge-neutral">${f.type}</span>
+                                <span><i data-lucide="user" class="icon-sm"></i> ${f.students ? f.students.fullname : 'Unknown'}</span>
+                                <span>${new Date(f.created_at).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+                        <span class="badge ${statusBadge}">${f.status}</span>
+                    </div>
+                    
+                    <div class="mb-16">
+                        <p style="background:var(--neutral-50); padding:var(--space-16); border-radius:var(--radius-md); font-size:var(--text-small);">${f.message}</p>
+                    </div>
+
+                    ${f.admin_response ? `
+                    <div class="mb-16">
+                        <span class="form-label mb-4" style="display:block; color:var(--primary-700);">Your Response</span>
+                        <p style="background:var(--primary-50); border:1px solid var(--primary-100); padding:var(--space-12); border-radius:var(--radius-md); font-size:var(--text-small); color:var(--primary-900);">
+                            ${f.admin_response}
+                        </p>
+                    </div>
+                    ` : `
+                    <div class="mt-16 pt-16" style="border-top:1px solid var(--neutral-200);">
+                        <textarea id="reply-${f.id}" class="form-input mb-8" placeholder="Type your response to the student..." rows="2"></textarea>
+                        <div class="flex justify-end gap-8">
+                            <button class="btn btn-secondary" onclick="updateStatus('${f.id}', 'resolved')">
+                                <i data-lucide="check" class="icon-sm"></i> Mark Resolved
+                            </button>
+                            <button class="btn btn-primary" onclick="sendReply('${f.id}')">
+                                <i data-lucide="send" class="icon-sm"></i> Send Reply
+                            </button>
+                        </div>
+                    </div>
+                    `}
                 `;
-                tbody.appendChild(tr);
+                list.appendChild(card);
             });
             lucide.createIcons();
         }
 
-        window.openReplyModal = (id, msg) => {
-            currentFbId = id;
-            document.getElementById('fb-msg').textContent = msg;
-            document.getElementById('replyModal').classList.remove('hidden');
-        }
+        window.updateStatus = async (id, status) => {
+            const { error } = await supabase.from('feedback').update({ status }).eq('id', id);
+            if (error) showAlert(error.message);
+            else {
+                showAlert('Status updated!', false);
+                loadFeedback();
+            }
+        };
 
-        window.closeModal = () => {
-            document.getElementById('replyModal').classList.add('hidden');
-            currentFbId = null;
-            document.getElementById('admin_response').value = '';
-        }
+        window.sendReply = async (id) => {
+            const reply = document.getElementById(`reply-${id}`).value;
+            if (!reply) return showAlert('Please enter a response.');
 
-        window.submitReply = async () => {
-            const resp = document.getElementById('admin_response').value;
-            if(!resp) { alert('Please enter a response.'); return; }
-            
-            const { error } = await supabase.from('feedback')
-                .update({ admin_response: resp, status: 'resolved', updated_at: new Date().toISOString() })
-                .eq('id', currentFbId);
-                
-            if(error) showAlert(error.message);
-            else { showAlert('Reply sent successfully.', false); loadFeedback(); }
-            
-            closeModal();
-        }
+            const { error } = await supabase.from('feedback').update({ 
+                admin_response: reply,
+                status: 'acknowledged'
+            }).eq('id', id);
+
+            if (error) showAlert(error.message);
+            else {
+                showAlert('Response sent successfully!', false);
+                loadFeedback();
+            }
+        };
 
         loadFeedback();
     </script>

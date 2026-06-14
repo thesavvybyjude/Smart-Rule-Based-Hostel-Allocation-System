@@ -8,48 +8,99 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <header class="navbar">
-        <div class="container flex items-center justify-between">
+    <div class="app-layout">
+        
+        <!-- Mobile Overlay -->
+        <div class="mobile-overlay" id="mobileOverlay"></div>
+
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
             <a href="/index.html" class="brand">
                 <i data-lucide="building-2"></i> AllocationSystem
             </a>
-            <nav class="navbar-nav">
-                <a href="/student/dashboard.html" class="nav-link"><i data-lucide="layout-dashboard" class="icon-sm"></i> Dashboard</a>
-                <a href="/student/feedback.html" class="nav-link"><i data-lucide="message-square-plus" class="icon-sm"></i> Submit Feedback</a>
-                <a href="/student/view_feedback.html" class="nav-link active"><i data-lucide="history" class="icon-sm"></i> My Feedback</a>
+            
+            <nav class="sidebar-nav">
+                <a href="/student/dashboard.html" class="sidebar-link">
+                    <i data-lucide="layout-dashboard" class="icon-md"></i> Dashboard
+                </a>
+                <a href="/student/feedback.html" class="sidebar-link">
+                    <i data-lucide="message-square-plus" class="icon-md"></i> Submit Feedback
+                </a>
+                <a href="/student/view_feedback.html" class="sidebar-link active">
+                    <i data-lucide="history" class="icon-md"></i> My Feedback
+                </a>
             </nav>
-        </div>
-    </header>
-    
-    <main class="container mt-32 mb-48">
-        <div class="flex items-center justify-between mb-24">
-            <div>
-                <h2>My Feedback History</h2>
-                <p>Track the status of your submitted tickets and view admin responses.</p>
+
+            <div class="sidebar-bottom">
+                <button id="logoutBtn" class="sidebar-link w-full" style="background:transparent; border:none; text-align:left; cursor:pointer;">
+                    <i data-lucide="log-out" class="icon-md"></i> Logout
+                </button>
             </div>
-            <a href="/student/feedback.html" class="btn btn-primary">
-                <i data-lucide="plus" class="icon-sm"></i> New Ticket
-            </a>
-        </div>
+        </aside>
 
-        <div id="alertBox" class="alert hidden"></div>
-
-        <div class="grid gap-16" id="feedbackList">
-            <div class="card text-center py-24">
-                <div class="empty-state">
-                    <i data-lucide="loader-2" class="icon-lg" style="animation: spin 2s linear infinite;"></i>
-                    <p class="mt-8">Loading your feedback history...</p>
+        <!-- Main Content Area -->
+        <div class="main-wrapper">
+            <!-- Mobile Header -->
+            <header class="mobile-header">
+                <div class="flex items-center gap-12">
+                    <button id="menuToggleBtn" style="background:none; border:none; cursor:pointer;">
+                        <i data-lucide="menu" class="icon-lg"></i>
+                    </button>
+                    <span style="font-weight:600; font-size:var(--text-h5);">Student Portal</span>
                 </div>
-            </div>
+            </header>
+
+            <main class="main-content">
+                <div class="flex items-center justify-between mb-24">
+                    <div>
+                        <h2>My Feedback History</h2>
+                        <p>Track the status of your submitted tickets and view admin responses.</p>
+                    </div>
+                    <a href="/student/feedback.html" class="btn btn-primary" style="text-decoration: none;">
+                        <i data-lucide="plus" class="icon-sm"></i> New Ticket
+                    </a>
+                </div>
+
+                <div id="alertBox" class="alert hidden"></div>
+
+                <div class="grid gap-16" id="feedbackList">
+                    <div class="card text-center py-24">
+                        <div class="empty-state">
+                            <i data-lucide="loader-2" class="icon-lg" style="animation: spin 2s linear infinite;"></i>
+                            <p class="mt-8">Loading your feedback history...</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
         </div>
-    </main>
+    </div>
 
     <script type="module">
         import { supabase } from '/js/supabase-client.js';
         lucide.createIcons();
 
+        // Mobile Menu Toggle
+        const menuBtn = document.getElementById('menuToggleBtn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobileOverlay');
+
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.add('open');
+            overlay.classList.add('active');
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        });
+
         const { data: { session } } = await supabase.auth.getSession();
         if (!session || session.user.email === 'admin@hostel.com') window.location.href = '/index.html';
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.href = '/login.html';
+        });
 
         async function loadMyFeedback() {
             const { data, error } = await supabase.from('feedback')
@@ -60,13 +111,13 @@
             const list = document.getElementById('feedbackList');
             
             if (error) {
-                list.innerHTML = `<div class="card color-waitlisted">Error: ${error.message}</div>`;
+                list.innerHTML = `<div class="card" style="color:var(--error-text);">Error: ${error.message}</div>`;
                 return;
             }
 
             if (data.length === 0) {
                 list.innerHTML = `
-                    <div class="card">
+                    <div class="card py-24 text-center">
                         <div class="empty-state">
                             <i data-lucide="inbox"></i>
                             <h3>No Feedback History</h3>

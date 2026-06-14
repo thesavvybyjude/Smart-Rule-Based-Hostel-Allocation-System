@@ -3,136 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Allocation Reports | Smart Hostel Allocation</title>
+    <title>Reports | Admin</title>
     <link rel="stylesheet" href="/css/style.css">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <header class="navbar">
-        <div class="container flex items-center justify-between">
+    <div class="app-layout">
+        
+        <!-- Mobile Overlay -->
+        <div class="mobile-overlay" id="mobileOverlay"></div>
+
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
             <a href="/index.html" class="brand">
                 <i data-lucide="building-2"></i> AllocationSystem
             </a>
-            <nav class="navbar-nav">
-                <a href="/admin/dashboard.html" class="nav-link"><i data-lucide="layout-dashboard" class="icon-sm"></i> Dashboard</a>
-                <a href="/admin/reports.html" class="nav-link active"><i data-lucide="bar-chart-3" class="icon-sm"></i> Reports</a>
+            
+            <nav class="sidebar-nav">
+                <a href="/admin/dashboard.html" class="sidebar-link">
+                    <i data-lucide="layout-dashboard" class="icon-md"></i> Dashboard
+                </a>
+                <a href="/admin/manage_hostels.html" class="sidebar-link">
+                    <i data-lucide="building" class="icon-md"></i> Hostels
+                </a>
+                <a href="/admin/manage_rooms.html" class="sidebar-link">
+                    <i data-lucide="door-open" class="icon-md"></i> Rooms
+                </a>
+                <a href="/admin/reports.html" class="sidebar-link active">
+                    <i data-lucide="bar-chart-3" class="icon-md"></i> Reports
+                </a>
+                <a href="/admin/manage_feedback.html" class="sidebar-link">
+                    <i data-lucide="message-square" class="icon-md"></i> Feedback
+                </a>
             </nav>
-        </div>
-    </header>
-    
-    <main class="container mt-32 mb-48">
-        <div class="flex items-center justify-between mb-24">
-            <div>
-                <h2>Allocation Reports</h2>
-                <p>Overview of the current system allocations and waitlists.</p>
-            </div>
-            <button class="btn btn-secondary" onclick="window.print()">
-                <i data-lucide="printer" class="icon-sm"></i> Print Report
-            </button>
-        </div>
 
-        <div id="alertBox" class="alert hidden"></div>
+            <div class="sidebar-bottom">
+                <button id="logoutBtn" class="sidebar-link w-full" style="background:transparent; border:none; text-align:left; cursor:pointer;">
+                    <i data-lucide="log-out" class="icon-md"></i> Logout
+                </button>
+            </div>
+        </aside>
 
-        <div class="grid grid-cols-3 gap-16 mb-32">
-            <div class="card stat-card">
-                <div class="flex justify-between items-center">
-                    <span class="stat-title">Allocated Students</span>
-                    <i data-lucide="check-circle-2" class="icon-md" style="color:var(--success-text)"></i>
+        <!-- Main Content Area -->
+        <div class="main-wrapper">
+            <!-- Mobile Header -->
+            <header class="mobile-header">
+                <div class="flex items-center gap-12">
+                    <button id="menuToggleBtn" style="background:none; border:none; cursor:pointer;">
+                        <i data-lucide="menu" class="icon-lg"></i>
+                    </button>
+                    <span style="font-weight:600; font-size:var(--text-h5);">Admin Portal</span>
                 </div>
-                <span class="stat-value" id="stat-allocated">--</span>
-            </div>
-            <div class="card stat-card">
-                <div class="flex justify-between items-center">
-                    <span class="stat-title">Waitlisted Students</span>
-                    <i data-lucide="alert-circle" class="icon-md" style="color:var(--error-text)"></i>
-                </div>
-                <span class="stat-value" id="stat-waitlisted">--</span>
-            </div>
-            <div class="card stat-card">
-                <div class="flex justify-between items-center">
-                    <span class="stat-title">Pending Requests</span>
-                    <i data-lucide="clock" class="icon-md" style="color:var(--warning-text)"></i>
-                </div>
-                <span class="stat-value" id="stat-pending">--</span>
-            </div>
-        </div>
+            </header>
 
-        <div class="card">
-            <div class="flex items-center justify-between mb-16">
-                <h3>Detailed Student Roster</h3>
-                <div class="flex items-center gap-8">
-                    <label class="form-label mb-0">Filter by status:</label>
-                    <select id="statusFilter" class="form-select" onchange="loadStudents()" style="width:150px; height:32px; padding:0 8px;">
-                        <option value="">All Students</option>
+            <main class="main-content">
+                <div class="flex items-center justify-between mb-24">
+                    <div>
+                        <h2>Allocation Reports</h2>
+                        <p>Detailed view of all students and their allocation status.</p>
+                    </div>
+                </div>
+
+                <div class="card mb-24 flex items-center gap-16">
+                    <div class="flex-1">
+                        <input type="text" id="searchInput" class="form-input" placeholder="Search by name or email..." style="margin:0;">
+                    </div>
+                    <select id="statusFilter" class="form-input w-auto" style="margin:0;">
+                        <option value="all">All Statuses</option>
                         <option value="allocated">Allocated</option>
-                        <option value="waitlisted">Waitlisted</option>
                         <option value="pending">Pending</option>
+                        <option value="waitlisted">Waitlisted</option>
+                        <option value="not_requested">Not Requested</option>
                     </select>
                 </div>
-            </div>
-            
-            <div class="table-wrapper">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Student Name</th>
-                            <th>Gender</th>
-                            <th>Level</th>
-                            <th>Medical Priority</th>
-                            <th>Allocation Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="studentsBody">
-                        <tr>
-                            <td colspan="5" class="text-center py-24">
-                                <div class="empty-state" style="padding:var(--space-24);">
-                                    <i data-lucide="loader-2" class="icon-lg" style="animation: spin 2s linear infinite;"></i>
-                                    <p class="mt-8">Loading reports...</p>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+
+                <div class="card">
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Student Name</th>
+                                    <th>Level</th>
+                                    <th>Gender</th>
+                                    <th>Medical</th>
+                                    <th>Status</th>
+                                    <th>Room / Hostel</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportsList">
+                                <tr>
+                                    <td colspan="6" class="text-center py-24">
+                                        <div class="empty-state">
+                                            <i data-lucide="loader-2" class="icon-lg" style="animation: spin 2s linear infinite;"></i>
+                                            <p class="mt-8">Loading reports...</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
         </div>
-    </main>
+    </div>
 
     <script type="module">
         import { supabase } from '/js/supabase-client.js';
         lucide.createIcons();
 
+        // Mobile Menu Toggle
+        const menuBtn = document.getElementById('menuToggleBtn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobileOverlay');
+
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.add('open');
+            overlay.classList.add('active');
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        });
+
         const { data: { session } } = await supabase.auth.getSession();
         if (!session || session.user.email !== 'admin@hostel.com') window.location.href = '/index.html';
 
-        async function loadStudents() {
-            const filter = document.getElementById('statusFilter').value;
-            let query = supabase.from('students').select('*').order('created_at', { ascending: false });
-            if (filter) {
-                query = query.eq('allocation_status', filter);
-            }
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.href = '/login.html';
+        });
 
-            const { data, error } = await query;
-            const tbody = document.getElementById('studentsBody');
+        let allData = [];
+
+        async function loadReports() {
+            const { data: students, error: err1 } = await supabase.from('students').select('*').order('created_at', { ascending: false });
+            const { data: allocations, error: err2 } = await supabase.from('allocations').select('student_id, rooms(room_number, hostels(name))');
             
-            if (error) {
-                tbody.innerHTML = `<tr><td colspan="5" class="color-waitlisted text-center">Error: ${error.message}</td></tr>`;
+            if (err1 || err2) {
+                document.getElementById('reportsList').innerHTML = `<tr><td colspan="6" class="text-center" style="color:var(--error-text);">Failed to load reports. Ensure Admin RLS policies are set!</td></tr>`;
                 return;
             }
 
-            if (!filter) {
-                document.getElementById('stat-allocated').textContent = data.filter(s => s.allocation_status === 'allocated').length;
-                document.getElementById('stat-waitlisted').textContent = data.filter(s => s.allocation_status === 'waitlisted').length;
-                document.getElementById('stat-pending').textContent = data.filter(s => s.allocation_status === 'pending').length;
-            }
+            allData = students.map(s => {
+                const alloc = allocations.find(a => a.student_id === s.id);
+                let roomInfo = '-';
+                if(alloc && alloc.rooms) {
+                    roomInfo = `Room ${alloc.rooms.room_number} (${alloc.rooms.hostels?.name || 'Unknown'})`;
+                }
+                return { ...s, roomInfo };
+            });
 
-            if (data.length === 0) {
+            renderTable(allData);
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('reportsList');
+            
+            if(data.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="5">
+                        <td colspan="6" class="text-center py-24">
                             <div class="empty-state">
-                                <i data-lucide="users"></i>
+                                <i data-lucide="search-x"></i>
                                 <h3>No Students Found</h3>
-                                <p>There are no students matching this filter.</p>
+                                <p>No records match your filters.</p>
                             </div>
                         </td>
                     </tr>
@@ -145,24 +180,46 @@
             data.forEach(s => {
                 let badgeClass = 'badge-neutral';
                 if (s.allocation_status === 'allocated') badgeClass = 'badge-success';
-                if (s.allocation_status === 'pending') badgeClass = 'badge-warning';
-                if (s.allocation_status === 'waitlisted') badgeClass = 'badge-error';
+                else if (s.allocation_status === 'pending') badgeClass = 'badge-warning';
+                else if (s.allocation_status === 'waitlisted') badgeClass = 'badge-error';
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td style="font-weight:500; color:var(--neutral-900);">${s.fullname}</td>
-                    <td>${s.gender}</td>
-                    <td>${s.level} Level</td>
-                    <td>${s.medical_status ? '<span class="badge badge-error"><i data-lucide="plus" class="icon-sm" style="margin-right:2px;"></i> Priority</span>' : '<span class="color-not_requested">No</span>'}</td>
-                    <td><span class="badge ${badgeClass}">${s.allocation_status}</span></td>
+                    <td>
+                        <div style="font-weight:600; color:var(--neutral-900);">${s.fullname}</div>
+                        <div class="text-small" style="color:var(--neutral-500);">${s.email}</div>
+                    </td>
+                    <td>${s.level}</td>
+                    <td><span class="badge ${s.gender === 'Male' ? 'badge-primary' : 'badge-warning'}">${s.gender}</span></td>
+                    <td>
+                        ${s.medical_status 
+                            ? '<span class="badge badge-error"><i data-lucide="heart-pulse" class="icon-sm"></i> Yes</span>' 
+                            : '<span style="color:var(--neutral-400);">No</span>'}
+                    </td>
+                    <td><span class="badge ${badgeClass}">${s.allocation_status.replace('_', ' ')}</span></td>
+                    <td style="font-weight:500;">${s.roomInfo}</td>
                 `;
                 tbody.appendChild(tr);
             });
             lucide.createIcons();
         }
 
-        window.loadStudents = loadStudents;
-        loadStudents();
+        function filterData() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+
+            const filtered = allData.filter(s => {
+                const matchesSearch = s.fullname.toLowerCase().includes(q) || s.email.toLowerCase().includes(q);
+                const matchesStatus = status === 'all' || s.allocation_status === status;
+                return matchesSearch && matchesStatus;
+            });
+            renderTable(filtered);
+        }
+
+        document.getElementById('searchInput').addEventListener('input', filterData);
+        document.getElementById('statusFilter').addEventListener('change', filterData);
+
+        loadReports();
     </script>
 </body>
 </html>
