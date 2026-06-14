@@ -3,79 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Feedback | Student</title>
+    <title>My Feedback | Smart Hostel Allocation</title>
     <link rel="stylesheet" href="/css/style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <header class="main-header">
-        <div class="container header-content">
-            <a href="/index.html" class="logo">Hostel Allocation</a>
-            <nav class="main-nav">
-                <a href="/student/dashboard.html">Dashboard</a>
-                <a href="/student/feedback.html">Submit Feedback</a>
-                <a href="/student/view_feedback.html" style="font-weight:bold;">My Feedback</a>
-                <span class="nav-user">Student</span>
+    <header class="navbar">
+        <div class="container flex items-center justify-between">
+            <a href="/index.html" class="brand">
+                <i data-lucide="building-2"></i> AllocationSystem
+            </a>
+            <nav class="navbar-nav">
+                <a href="/student/dashboard.html" class="nav-link"><i data-lucide="layout-dashboard" class="icon-sm"></i> Dashboard</a>
+                <a href="/student/feedback.html" class="nav-link"><i data-lucide="message-square-plus" class="icon-sm"></i> Submit Feedback</a>
+                <a href="/student/view_feedback.html" class="nav-link active"><i data-lucide="history" class="icon-sm"></i> My Feedback</a>
             </nav>
         </div>
     </header>
     
-    <main class="container main-content">
-        <div class="card">
-            <h1>My Feedback History</h1>
-            <div id="alertBox" class="alert" style="display: none;"></div>
+    <main class="container mt-32 mb-48">
+        <div class="flex items-center justify-between mb-24">
+            <div>
+                <h2>My Feedback History</h2>
+                <p>Track the status of your submitted tickets and view admin responses.</p>
+            </div>
+            <a href="/student/feedback.html" class="btn btn-primary">
+                <i data-lucide="plus" class="icon-sm"></i> New Ticket
+            </a>
+        </div>
 
-            <div id="feedbackContainer" style="margin-top: 20px;">
-                <p>Loading...</p>
+        <div id="alertBox" class="alert hidden"></div>
+
+        <div class="grid gap-16" id="feedbackList">
+            <div class="card text-center py-24">
+                <div class="empty-state">
+                    <i data-lucide="loader-2" class="icon-lg" style="animation: spin 2s linear infinite;"></i>
+                    <p class="mt-8">Loading your feedback history...</p>
+                </div>
             </div>
         </div>
     </main>
 
     <script type="module">
         import { supabase } from '/js/supabase-client.js';
+        lucide.createIcons();
 
         const { data: { session } } = await supabase.auth.getSession();
         if (!session || session.user.email === 'admin@hostel.com') window.location.href = '/index.html';
 
-        async function loadFeedback() {
-            const container = document.getElementById('feedbackContainer');
+        async function loadMyFeedback() {
             const { data, error } = await supabase.from('feedback')
                 .select('*')
                 .eq('student_id', session.user.id)
                 .order('created_at', { ascending: false });
-
+                
+            const list = document.getElementById('feedbackList');
+            
             if (error) {
-                container.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
-                return;
-            }
-            if (data.length === 0) {
-                container.innerHTML = '<p>You have not submitted any feedback yet.</p>';
+                list.innerHTML = `<div class="card color-waitlisted">Error: ${error.message}</div>`;
                 return;
             }
 
-            container.innerHTML = '';
-            data.forEach(f => {
-                const color = f.status === 'resolved' ? 'green' : (f.status === 'pending' ? 'orange' : 'gray');
-                container.innerHTML += `
-                    <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
-                        <div style="display:flex; justify-content:space-between; margin-bottom: 10px;">
-                            <h3 style="margin:0;">${f.subject} <span style="font-size:0.8rem; background:#f1f5f9; padding:3px 6px; border-radius:4px; font-weight:normal;">${f.type}</span></h3>
-                            <span style="color:${color}; font-weight:bold; text-transform:capitalize;">${f.status}</span>
+            if (data.length === 0) {
+                list.innerHTML = `
+                    <div class="card">
+                        <div class="empty-state">
+                            <i data-lucide="inbox"></i>
+                            <h3>No Feedback History</h3>
+                            <p>You haven't submitted any feedback or tickets yet.</p>
                         </div>
-                        <p style="margin: 0 0 10px 0; color: #475569;">${f.message}</p>
-                        
-                        ${f.admin_response ? `
-                            <div style="background: #f0fdf4; border-left: 4px solid #16a34a; padding: 10px; margin-top: 10px;">
-                                <strong>Admin Reply:</strong>
-                                <p style="margin: 5px 0 0 0;">${f.admin_response}</p>
-                            </div>
-                        ` : ''}
-                        <div style="font-size:0.8rem; color:#94a3b8; margin-top: 10px;">Submitted: ${new Date(f.created_at).toLocaleString()}</div>
                     </div>
                 `;
+                lucide.createIcons();
+                return;
+            }
+
+            list.innerHTML = '';
+            data.forEach(f => {
+                let statusBadge = 'badge-neutral';
+                if(f.status === 'resolved') statusBadge = 'badge-success';
+                if(f.status === 'pending') statusBadge = 'badge-warning';
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-16 pb-16" style="border-bottom:1px solid var(--neutral-200);">
+                        <div>
+                            <h4 style="margin-bottom:var(--space-4);">${f.subject}</h4>
+                            <div class="flex items-center gap-8 text-small" style="color:var(--neutral-500);">
+                                <span class="badge badge-neutral">${f.type}</span>
+                                <span>${new Date(f.created_at).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+                        <span class="badge ${statusBadge}">${f.status}</span>
+                    </div>
+                    
+                    <div class="mb-16">
+                        <span class="form-label mb-4" style="display:block;">Your Message</span>
+                        <p style="background:var(--neutral-50); padding:var(--space-12); border-radius:var(--radius-md); font-size:var(--text-small);">${f.message}</p>
+                    </div>
+
+                    ${f.admin_response ? `
+                    <div>
+                        <span class="form-label mb-4" style="display:block; color:var(--primary-700);">Admin Response</span>
+                        <p style="background:var(--primary-50); border:1px solid var(--primary-100); padding:var(--space-12); border-radius:var(--radius-md); font-size:var(--text-small); color:var(--primary-900);">
+                            ${f.admin_response}
+                        </p>
+                    </div>
+                    ` : ''}
+                `;
+                list.appendChild(card);
             });
+            lucide.createIcons();
         }
 
-        loadFeedback();
+        loadMyFeedback();
     </script>
 </body>
 </html>

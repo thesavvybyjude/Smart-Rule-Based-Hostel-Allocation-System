@@ -3,29 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Rule-Based Hostel Allocation System</title>
+    <title>Smart Hostel Allocation</title>
     <link rel="stylesheet" href="/css/style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body>
-    <div style="display:flex; justify-content:center; align-items:center; height:100vh;">
-        <h2>Loading...</h2>
+<body class="flex items-center justify-center" style="min-height: 100vh;">
+    <div class="empty-state">
+        <i data-lucide="loader-2" class="icon-lg" style="animation: spin 2s linear infinite;"></i>
+        <h3 class="mt-16">Initializing System</h3>
+        <p>Please wait while we verify your session.</p>
     </div>
+
+    <style>
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
 
     <script type="module">
         import { supabase } from '/js/supabase-client.js';
 
+        lucide.createIcons();
+
         async function checkSession() {
-            const { data: { session }, error } = await supabase.auth.getSession();
-            
-            if (session) {
-                // If logged in, check if admin (we'll just use email 'admin@hostel.com' for simplicity)
-                if (session.user.email === 'admin@hostel.com') {
-                    window.location.href = '/admin/dashboard.html';
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                
+                if (session) {
+                    if (session.user.email === 'admin@hostel.com') {
+                        window.location.href = '/admin/dashboard.html';
+                    } else {
+                        window.location.href = '/student/dashboard.html';
+                    }
                 } else {
-                    window.location.href = '/student/dashboard.html';
+                    window.location.href = '/login.html';
                 }
-            } else {
-                // Not logged in
+            } catch(err) {
+                console.error("Session check failed", err);
                 window.location.href = '/login.html';
             }
         }

@@ -3,83 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Smart Rule-Based Hostel Allocation System for tertiary institutions">
-    <title>Login | Smart Rule-Based Hostel Allocation System</title>
+    <title>Login | Smart Hostel Allocation</title>
     <link rel="stylesheet" href="/css/style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .auth-container { max-width: 400px; margin: var(--space-64) auto; }
+        .auth-header { text-align: center; margin-bottom: var(--space-32); }
+        .auth-header svg { width: 48px; height: 48px; color: var(--primary-600); margin-bottom: var(--space-16); }
+    </style>
 </head>
-<body>
-    <header class="main-header">
-        <div class="container header-content">
-            <a href="/index.html" class="logo">Hostel Allocation System</a>
+<body class="flex items-center justify-center" style="min-height: 100vh; background-color: var(--neutral-100);">
+
+    <div class="auth-container w-full">
+        <div class="auth-header">
+            <i data-lucide="building-2"></i>
+            <h2>Welcome Back</h2>
+            <p>Sign in to your account to continue</p>
         </div>
-    </header>
-    
-    <main class="container main-content">
-        <div class="form-container">
-            <div class="card">
-                <h1 class="page-title">Login</h1>
+
+        <div class="card">
+            <div id="alertBox" class="alert hidden"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label" for="email">Email Address</label>
+                    <input type="email" id="email" class="form-input" placeholder="student@university.edu" required>
+                </div>
                 
-                <div id="alertBox" class="alert" style="display: none;"></div>
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+                </div>
                 
-                <form id="loginForm">
-                    <div class="form-group">
-                        <label for="email">Email Address</label>
-                        <input type="email" id="email" name="email" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" name="password" required>
-                    </div>
-                    
-                    <button type="submit" id="submitBtn" class="btn btn-primary" style="width:100%;">Login</button>
-                </form>
-                
-                <p style="text-align:center; margin-top:15px;">
-                    Don't have an account? <a href="/register.html">Register here</a>
-                </p>
+                <button type="submit" id="loginBtn" class="btn btn-primary w-full mt-16">
+                    <i data-lucide="log-in" class="icon-sm"></i> Sign In
+                </button>
+            </form>
+
+            <div class="mt-24 text-center">
+                <small>Don't have an account? <a href="/register.html">Create one</a></small>
             </div>
         </div>
-    </main>
+    </div>
 
     <script type="module">
         import { supabase } from '/js/supabase-client.js';
 
-        // Redirect if already logged in
+        lucide.createIcons();
+
         const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-            window.location.href = '/index.html';
-        }
+        if (session) { window.location.href = '/index.html'; }
 
-        const loginForm = document.getElementById('loginForm');
         const alertBox = document.getElementById('alertBox');
-        const submitBtn = document.getElementById('submitBtn');
-
-        function showAlert(message, isError = true) {
-            alertBox.style.display = 'block';
-            alertBox.className = `alert ${isError ? 'alert-error' : 'alert-success'}`;
-            alertBox.textContent = message;
+        function showAlert(msg, isError = true) {
+            alertBox.classList.remove('hidden', 'alert-success', 'alert-error');
+            alertBox.classList.add(isError ? 'alert-error' : 'alert-success');
+            alertBox.innerHTML = `<i data-lucide="${isError ? 'alert-circle' : 'check-circle'}" class="icon-sm"></i> ${msg}`;
+            lucide.createIcons();
         }
 
-        loginForm.addEventListener('submit', async (e) => {
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Logging in...';
-            alertBox.style.display = 'none';
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="icon-sm" style="animation: spin 2s linear infinite;"></i> Signing in...`;
+            lucide.createIcons();
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password,
-            });
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
             if (error) {
                 showAlert(error.message);
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Login';
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="log-in" class="icon-sm"></i> Sign In`;
+                lucide.createIcons();
             } else {
                 window.location.href = '/index.html';
             }

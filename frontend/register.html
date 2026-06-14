@@ -3,168 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Smart Rule-Based Hostel Allocation System for tertiary institutions">
-    <title>Register | Smart Rule-Based Hostel Allocation System</title>
+    <title>Register | Smart Hostel Allocation</title>
     <link rel="stylesheet" href="/css/style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .auth-container { max-width: 500px; margin: var(--space-64) auto; }
+        .auth-header { text-align: center; margin-bottom: var(--space-32); }
+        .auth-header svg { width: 48px; height: 48px; color: var(--primary-600); margin-bottom: var(--space-16); }
+    </style>
 </head>
-<body>
-    <header class="main-header">
-        <div class="container header-content">
-            <a href="/index.html" class="logo">Hostel Allocation System</a>
+<body class="flex items-center justify-center" style="min-height: 100vh; background-color: var(--neutral-100); padding: var(--space-24) 0;">
+
+    <div class="auth-container w-full">
+        <div class="auth-header">
+            <i data-lucide="user-plus"></i>
+            <h2>Create Account</h2>
+            <p>Register for hostel allocation</p>
         </div>
-    </header>
-    
-    <main class="container main-content">
-        <div class="form-container">
-            <div class="card">
-                <h1 class="page-title">Student Registration</h1>
+
+        <div class="card">
+            <div id="alertBox" class="alert hidden"></div>
+
+            <form id="registerForm">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="fullname" class="form-input" required>
+                </div>
                 
-                <div id="alertBox" class="alert" style="display: none;"></div>
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" id="email" class="form-input" required>
+                </div>
                 
-                <form id="registerForm">
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="password" class="form-input" minlength="6" required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-16">
                     <div class="form-group">
-                        <label for="fullname">Full Name</label>
-                        <input type="text" id="fullname" name="fullname" required minlength="3">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="email">Email Address</label>
-                        <input type="email" id="email" name="email" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" name="password" required minlength="6">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="confirm_password">Confirm Password</label>
-                        <input type="password" id="confirm_password" name="confirm_password" required minlength="6">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="gender">Gender</label>
-                        <select id="gender" name="gender" required>
-                            <option value="">-- Select Gender --</option>
+                        <label class="form-label">Gender</label>
+                        <select id="gender" class="form-select" required>
+                            <option value="">Select...</option>
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
-                        <label for="level">Level</label>
-                        <select id="level" name="level" required>
-                            <option value="">-- Select Level --</option>
+                        <label class="form-label">Academic Level</label>
+                        <select id="level" class="form-select" required>
+                            <option value="">Select...</option>
                             <option value="100">100 Level</option>
                             <option value="200">200 Level</option>
                             <option value="300">300 Level</option>
                             <option value="400">400 Level</option>
                         </select>
                     </div>
-                    
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="medical_status" name="medical_status">
-                            I have a medical condition (Priority allocation)
-                        </label>
-                    </div>
-                    
-                    <button type="submit" id="submitBtn" class="btn btn-primary" style="width:100%;">Register</button>
-                </form>
+                </div>
+
+                <div class="form-group mt-8">
+                    <label class="flex items-center gap-8 cursor-pointer">
+                        <input type="checkbox" id="medical_status" style="width:16px; height:16px;">
+                        <span class="form-label" style="margin:0;">I have a special medical condition (Priority Allocation)</span>
+                    </label>
+                </div>
                 
-                <p style="text-align:center; margin-top:15px;">
-                    Already have an account? <a href="/login.html">Login here</a>
-                </p>
+                <button type="submit" id="regBtn" class="btn btn-primary w-full mt-24">
+                    <i data-lucide="user-check" class="icon-sm"></i> Create Account
+                </button>
+            </form>
+
+            <div class="mt-24 text-center">
+                <small>Already have an account? <a href="/login.html">Sign in</a></small>
             </div>
         </div>
-    </main>
+    </div>
 
     <script type="module">
         import { supabase } from '/js/supabase-client.js';
 
-        // Redirect if already logged in
+        lucide.createIcons();
+
         const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-            window.location.href = '/index.html';
-        }
+        if (session) { window.location.href = '/index.html'; }
 
-        const registerForm = document.getElementById('registerForm');
         const alertBox = document.getElementById('alertBox');
-        const submitBtn = document.getElementById('submitBtn');
-
-        function showAlert(message, isError = true) {
-            alertBox.style.display = 'block';
-            alertBox.className = `alert ${isError ? 'alert-error' : 'alert-success'}`;
-            alertBox.innerHTML = message;
+        function showAlert(msg, isError = true) {
+            alertBox.classList.remove('hidden', 'alert-success', 'alert-error');
+            alertBox.classList.add(isError ? 'alert-error' : 'alert-success');
+            alertBox.innerHTML = `<i data-lucide="${isError ? 'alert-circle' : 'check-circle'}" class="icon-sm"></i> ${msg}`;
+            lucide.createIcons();
         }
 
-        registerForm.addEventListener('submit', async (e) => {
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Registering...';
-            alertBox.style.display = 'none';
+            const btn = document.getElementById('regBtn');
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="icon-sm" style="animation: spin 2s linear infinite;"></i> Creating Account...`;
+            lucide.createIcons();
 
-            const fullname = document.getElementById('fullname').value.trim();
-            const email = document.getElementById('email').value.trim();
+            const fullname = document.getElementById('fullname').value;
+            const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirm_password').value;
             const gender = document.getElementById('gender').value;
             const level = parseInt(document.getElementById('level').value);
-            const medicalStatus = document.getElementById('medical_status').checked;
+            const medical_status = document.getElementById('medical_status').checked;
 
-            if (password !== confirmPassword) {
-                showAlert('Passwords do not match.');
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Register';
-                return;
-            }
-
-            if (email === 'admin@hostel.com') {
-                showAlert('This email address is reserved.');
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Register';
-                return;
-            }
-
-            // 1. Sign up with Supabase Auth
-            const { data: authData, error: authError } = await supabase.auth.signUp({
-                email: email,
-                password: password,
-            });
+            const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
 
             if (authError) {
                 showAlert(authError.message);
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Register';
+                resetBtn();
                 return;
             }
 
-            // 2. Insert additional data into 'students' table
             if (authData.user) {
-                const { error: dbError } = await supabase.from('students').insert({
+                const { error: dbError } = await supabase.from('students').insert([{
                     id: authData.user.id,
-                    email: email,
-                    fullname: fullname,
-                    gender: gender,
-                    level: level,
-                    medical_status: medicalStatus,
+                    email,
+                    fullname,
+                    gender,
+                    level,
+                    medical_status,
                     allocation_status: 'not_requested'
-                });
+                }]);
 
                 if (dbError) {
-                    showAlert('Account created but failed to save details: ' + dbError.message);
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Register';
+                    showAlert('Registration failed at database level: ' + dbError.message);
+                } else {
+                    showAlert('Registration successful! Redirecting...', false);
+                    setTimeout(() => window.location.href = '/index.html', 1500);
                     return;
                 }
-
-                showAlert('Registration successful! You can now <a href="/login.html">log in</a>.', false);
-                registerForm.reset();
             }
+            resetBtn();
 
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Register';
+            function resetBtn() {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="user-check" class="icon-sm"></i> Create Account`;
+                lucide.createIcons();
+            }
         });
     </script>
 </body>

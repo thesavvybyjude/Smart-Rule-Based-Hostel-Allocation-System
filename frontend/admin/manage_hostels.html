@@ -3,95 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Hostels | Admin</title>
+    <title>Manage Hostels | Smart Hostel Allocation</title>
     <link rel="stylesheet" href="/css/style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <header class="main-header">
-        <div class="container header-content">
-            <a href="/index.html" class="logo">Hostel Allocation</a>
-            <nav class="main-nav">
-                <a href="/admin/dashboard.html">Dashboard</a>
-                <a href="/admin/manage_hostels.html" style="font-weight:bold;">Hostels</a>
-                <a href="/admin/manage_rooms.html">Rooms</a>
-                <span class="nav-user">Welcome, Admin</span>
+    <header class="navbar">
+        <div class="container flex items-center justify-between">
+            <a href="/index.html" class="brand">
+                <i data-lucide="building-2"></i> AllocationSystem
+            </a>
+            <nav class="navbar-nav">
+                <a href="/admin/dashboard.html" class="nav-link"><i data-lucide="layout-dashboard" class="icon-sm"></i> Dashboard</a>
+                <a href="/admin/manage_hostels.html" class="nav-link active"><i data-lucide="building" class="icon-sm"></i> Hostels</a>
+                <a href="/admin/manage_rooms.html" class="nav-link"><i data-lucide="door-open" class="icon-sm"></i> Rooms</a>
             </nav>
         </div>
     </header>
     
-    <main class="container main-content">
-        <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h1>Manage Hostels</h1>
+    <main class="container mt-32 mb-48">
+        <div class="flex items-center justify-between mb-24">
+            <div>
+                <h2>Manage Hostels</h2>
+                <p>Create and remove hostel blocks.</p>
             </div>
-            
-            <div id="alertBox" class="alert" style="display: none;"></div>
-            
-            <div style="margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 5px;">
-                <h3>Add New Hostel</h3>
-                <form id="addHostelForm" style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
-                    <div style="flex: 1; min-width: 200px;">
-                        <label>Hostel Name</label>
-                        <input type="text" id="h_name" required>
+        </div>
+
+        <div id="alertBox" class="alert hidden"></div>
+
+        <div class="grid grid-cols-3 gap-24">
+            <!-- Add Form -->
+            <div class="card" style="align-self: start;">
+                <h3 class="mb-16 flex items-center gap-8"><i data-lucide="plus-circle" class="icon-sm"></i> Add Hostel</h3>
+                <form id="addHostelForm">
+                    <div class="form-group">
+                        <label class="form-label">Hostel Name</label>
+                        <input type="text" id="h_name" class="form-input" required>
                     </div>
-                    <div style="flex: 1; min-width: 150px;">
-                        <label>Gender Category</label>
-                        <select id="h_gender" required>
+                    <div class="form-group">
+                        <label class="form-label">Gender Category</label>
+                        <select id="h_gender" class="form-select" required>
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>
                         </select>
                     </div>
-                    <div style="flex: 1; min-width: 100px;">
-                        <label>Total Rooms</label>
-                        <input type="number" id="h_rooms" required min="1">
+                    <div class="form-group">
+                        <label class="form-label">Total Rooms (Estimate)</label>
+                        <input type="number" id="h_rooms" class="form-input" required min="1">
                     </div>
-                    <div>
-                        <button type="submit" class="btn btn-primary" style="margin-bottom: 5px;">Add Hostel</button>
-                    </div>
+                    <button type="submit" id="addBtn" class="btn btn-primary w-full mt-8">
+                        <i data-lucide="save" class="icon-sm"></i> Save Hostel
+                    </button>
                 </form>
             </div>
 
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Hostel Name</th>
-                        <th>Gender</th>
-                        <th>Total Rooms Configured</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="hostelsBody">
-                    <tr><td colspan="4" style="text-align:center;">Loading...</td></tr>
-                </tbody>
-            </table>
+            <!-- Table -->
+            <div class="card" style="grid-column: span 2;">
+                <div class="table-wrapper">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Hostel Name</th>
+                                <th>Gender</th>
+                                <th>Rooms Configured</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hostelsBody">
+                            <tr>
+                                <td colspan="4" class="text-center py-24">
+                                    <div class="empty-state" style="padding:var(--space-24);">
+                                        <i data-lucide="loader-2" class="icon-lg" style="animation: spin 2s linear infinite;"></i>
+                                        <p class="mt-8">Loading hostels...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </main>
 
     <script type="module">
         import { supabase } from '/js/supabase-client.js';
+        lucide.createIcons();
 
-        // Check Admin Auth
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session || session.user.email !== 'admin@hostel.com') {
-            window.location.href = '/index.html';
-        }
+        if (!session || session.user.email !== 'admin@hostel.com') window.location.href = '/index.html';
 
         const alertBox = document.getElementById('alertBox');
         function showAlert(msg, isError=true) {
-            alertBox.style.display = 'block';
-            alertBox.className = `alert ${isError ? 'alert-error' : 'alert-success'}`;
-            alertBox.textContent = msg;
+            alertBox.classList.remove('hidden', 'alert-success', 'alert-error');
+            alertBox.classList.add(isError ? 'alert-error' : 'alert-success');
+            alertBox.innerHTML = `<i data-lucide="${isError ? 'alert-circle' : 'check-circle'}" class="icon-sm"></i> ${msg}`;
+            lucide.createIcons();
         }
 
         async function loadHostels() {
             const { data, error } = await supabase.from('hostels').select('*').order('name');
             const tbody = document.getElementById('hostelsBody');
+            
             if (error) {
-                tbody.innerHTML = `<tr><td colspan="4" style="color:red;">Error loading hostels: ${error.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="color-waitlisted text-center">Error: ${error.message}</td></tr>`;
                 return;
             }
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No hostels found.</td></tr>';
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4">
+                            <div class="empty-state">
+                                <i data-lucide="building"></i>
+                                <h3>No Hostels Found</h3>
+                                <p>Add a hostel using the form on the left to get started.</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                lucide.createIcons();
                 return;
             }
 
@@ -99,19 +128,25 @@
             data.forEach(h => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${h.name}</td>
-                    <td>${h.gender_category}</td>
+                    <td style="font-weight:500; color:var(--neutral-900);">${h.name}</td>
+                    <td><span class="badge ${h.gender_category==='Male'?'badge-info':'badge-error'}">${h.gender_category}</span></td>
                     <td>${h.total_rooms}</td>
                     <td>
-                        <button class="btn" style="background:#ef4444; padding: 5px 10px;" onclick="deleteHostel('${h.id}')">Delete</button>
+                        <button class="btn btn-danger-solid btn-sm" onclick="deleteHostel('${h.id}')">
+                            <i data-lucide="trash-2" class="icon-sm"></i> Delete
+                        </button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
+            lucide.createIcons();
         }
 
         document.getElementById('addHostelForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const btn = document.getElementById('addBtn');
+            btn.disabled = true;
+
             const name = document.getElementById('h_name').value;
             const gender = document.getElementById('h_gender').value;
             const rooms = parseInt(document.getElementById('h_rooms').value);
@@ -124,13 +159,14 @@
                 e.target.reset();
                 loadHostels();
             }
+            btn.disabled = false;
         });
 
         window.deleteHostel = async (id) => {
-            if(!confirm('Delete this hostel? All associated rooms will also be deleted.')) return;
+            if(!confirm('Are you sure you want to delete this hostel? All associated rooms will be removed.')) return;
             const { error } = await supabase.from('hostels').delete().eq('id', id);
             if(error) showAlert(error.message);
-            else { showAlert('Deleted', false); loadHostels(); }
+            else { showAlert('Hostel deleted successfully', false); loadHostels(); }
         }
 
         loadHostels();
