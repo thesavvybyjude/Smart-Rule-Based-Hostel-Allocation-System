@@ -1,0 +1,16 @@
+{
+  "name": "hostel-allocation",
+  "version": "1.0.0",
+  "description": "Smart Rule-Based Hostel Allocation System",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "node api/index.js",
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}

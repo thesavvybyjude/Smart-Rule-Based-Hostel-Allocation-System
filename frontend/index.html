@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Rule-Based Hostel Allocation System</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div style="display:flex; justify-content:center; align-items:center; height:100vh;">
+        <h2>Loading...</h2>
+    </div>
+
+    <script type="module">
+        import { supabase } from '/js/supabase-client.js';
+
+        async function checkSession() {
+            const { data: { session }, error } = await supabase.auth.getSession();
+            
+            if (session) {
+                // If logged in, check if admin (we'll just use email 'admin@hostel.com' for simplicity)
+                if (session.user.email === 'admin@hostel.com') {
+                    window.location.href = '/admin/dashboard.html';
+                } else {
+                    window.location.href = '/student/dashboard.html';
+                }
+            } else {
+                // Not logged in
+                window.location.href = '/login.html';
+            }
+        }
+
+        checkSession();
+    </script>
+</body>
+</html>

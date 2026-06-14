@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Smart Rule-Based Hostel Allocation System for tertiary institutions">
+    <title>Login | Smart Rule-Based Hostel Allocation System</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="main-header">
+        <div class="container header-content">
+            <a href="/index.html" class="logo">Hostel Allocation System</a>
+        </div>
+    </header>
+    
+    <main class="container main-content">
+        <div class="form-container">
+            <div class="card">
+                <h1 class="page-title">Login</h1>
+                
+                <div id="alertBox" class="alert" style="display: none;"></div>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    
+                    <button type="submit" id="submitBtn" class="btn btn-primary" style="width:100%;">Login</button>
+                </form>
+                
+                <p style="text-align:center; margin-top:15px;">
+                    Don't have an account? <a href="/register.html">Register here</a>
+                </p>
+                
+                <hr style="margin: 15px 0;">
+                <p style="text-align:center; font-size:0.85rem; color:#64748b;">
+                    Admin login: Use <strong>admin@hostel.com</strong>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { supabase } from '/js/supabase-client.js';
+
+        // Redirect if already logged in
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+            window.location.href = '/index.html';
+        }
+
+        const loginForm = document.getElementById('loginForm');
+        const alertBox = document.getElementById('alertBox');
+        const submitBtn = document.getElementById('submitBtn');
+
+        function showAlert(message, isError = true) {
+            alertBox.style.display = 'block';
+            alertBox.className = `alert ${isError ? 'alert-error' : 'alert-success'}`;
+            alertBox.textContent = message;
+        }
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Logging in...';
+            alertBox.style.display = 'none';
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
+
+            if (error) {
+                showAlert(error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Login';
+            } else {
+                window.location.href = '/index.html';
+            }
+        });
+    </script>
+</body>
+</html>

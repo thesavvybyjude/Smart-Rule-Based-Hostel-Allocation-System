@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Smart Rule-Based Hostel Allocation System</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2563eb;
+            margin: 10px 0;
+        }
+        .action-links {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .action-links a {
+            display: block;
+            padding: 12px;
+            background: #f1f5f9;
+            color: #334155;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 500;
+            border-left: 4px solid #2563eb;
+            transition: background 0.2s;
+        }
+        .action-links a:hover {
+            background: #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+    <header class="main-header">
+        <div class="container header-content">
+            <a href="/index.html" class="logo">Hostel Allocation</a>
+            <nav class="main-nav">
+                <a href="/admin/dashboard.html" style="font-weight:bold;">Dashboard</a>
+                <span class="nav-user">Welcome, Admin</span>
+                <button id="logoutBtn" class="btn-logout" style="background:none; border:none; cursor:pointer;">Logout</button>
+            </nav>
+        </div>
+    </header>
+    
+    <main class="container main-content">
+        <div class="card" style="margin-bottom: 20px;">
+            <h1>Admin Dashboard</h1>
+            <p>Welcome to the admin panel. Here you can manage the hostel allocation process.</p>
+        </div>
+
+        <div class="admin-grid" id="statsGrid">
+            <div class="stat-card">
+                <h3>Total Students</h3>
+                <div class="stat-value" id="stat-students">...</div>
+            </div>
+            <div class="stat-card">
+                <h3>Pending Requests</h3>
+                <div class="stat-value" id="stat-pending">...</div>
+            </div>
+            <div class="stat-card">
+                <h3>Allocated</h3>
+                <div class="stat-value" id="stat-allocated">...</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Rooms</h3>
+                <div class="stat-value" id="stat-rooms">...</div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top:20px;">
+            <div class="card">
+                <h2>Quick Actions</h2>
+                <div class="action-links">
+                    <a href="javascript:runAllocation()">▶ Run Allocation Algorithm</a>
+                    <a href="/admin/manage_hostels.html">🏢 Manage Hostels</a>
+                    <a href="/admin/manage_rooms.html">🚪 Manage Rooms</a>
+                    <a href="/admin/reports.html">📊 View Reports</a>
+                    <a href="/admin/manage_feedback.html">💬 View Feedback</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { supabase } from '/js/supabase-client.js';
+
+        // Session Check
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            window.location.href = '/login.html';
+        } else if (session.user.email !== 'admin@hostel.com') {
+            window.location.href = '/student/dashboard.html';
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.href = '/login.html';
+        });
+
+        async function loadStats() {
+            try {
+                // Get all students
+                const { data: students, error: err1 } = await supabase.from('students').select('*');
+                if (!err1 && students) {
+                    document.getElementById('stat-students').textContent = students.length;
+                    const pending = students.filter(s => s.allocation_status === 'pending').length;
+                    document.getElementById('stat-pending').textContent = pending;
+                    const allocated = students.filter(s => s.allocation_status === 'allocated').length;
+                    document.getElementById('stat-allocated').textContent = allocated;
+                }
+
+                // Get all rooms
+                const { data: rooms, error: err2 } = await supabase.from('rooms').select('*');
+                if (!err2 && rooms) {
+                    document.getElementById('stat-rooms').textContent = rooms.length;
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        window.runAllocation = async () => {
+            if(!confirm('Are you sure you want to run the allocation algorithm? This will overwrite current allocations.')) return;
+            
+            // This will call our serverless function
+            try {
+                const response = await fetch('/api/allocation/run', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // In a real app we'd pass the auth token here to verify on the server
+                        'Authorization': `Bearer ${session.access_token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(`Allocation Complete!\nAllocated: ${result.allocated}\nWaitlisted: ${result.waitlisted}`);
+                    loadStats(); // refresh stats
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.message);
+                }
+            } catch (e) {
+                alert('Request failed: ' + e.message);
+            }
+        };
+
+        loadStats();
+    </script>
+</body>
+</html>
