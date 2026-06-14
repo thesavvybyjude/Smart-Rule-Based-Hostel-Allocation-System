@@ -81,6 +81,14 @@ CREATE POLICY feedback_select ON feedback FOR SELECT USING (auth.uid() = student
 CREATE POLICY hostels_select ON hostels FOR SELECT USING (true);
 CREATE POLICY rooms_select ON rooms FOR SELECT USING (true);
 
+-- ADMIN POLICIES --
+-- Admin can do everything on all tables
+CREATE POLICY admin_students_all ON students FOR ALL USING (auth.jwt() ->> 'email' = 'admin@hostel.com');
+CREATE POLICY admin_hostels_all ON hostels FOR ALL USING (auth.jwt() ->> 'email' = 'admin@hostel.com');
+CREATE POLICY admin_rooms_all ON rooms FOR ALL USING (auth.jwt() ->> 'email' = 'admin@hostel.com');
+CREATE POLICY admin_allocations_all ON allocations FOR ALL USING (auth.jwt() ->> 'email' = 'admin@hostel.com');
+CREATE POLICY admin_feedback_all ON feedback FOR ALL USING (auth.jwt() ->> 'email' = 'admin@hostel.com');
+
 -- NOTE: The serverless functions use the SERVICE_ROLE_KEY, which completely bypasses RLS.
 -- This means operations like running the allocation engine, resetting rooms, and getting all reports
 -- will work fine from the backend API without needing special admin RLS policies.
