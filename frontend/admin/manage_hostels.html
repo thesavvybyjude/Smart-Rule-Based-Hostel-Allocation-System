@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Hostels | Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="main-header">
+        <div class="container header-content">
+            <a href="/index.html" class="logo">Hostel Allocation</a>
+            <nav class="main-nav">
+                <a href="/admin/dashboard.html">Dashboard</a>
+                <a href="/admin/manage_hostels.html" style="font-weight:bold;">Hostels</a>
+                <a href="/admin/manage_rooms.html">Rooms</a>
+                <span class="nav-user">Welcome, Admin</span>
+            </nav>
+        </div>
+    </header>
+    
+    <main class="container main-content">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h1>Manage Hostels</h1>
+            </div>
+            
+            <div id="alertBox" class="alert" style="display: none;"></div>
+            
+            <div style="margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 5px;">
+                <h3>Add New Hostel</h3>
+                <form id="addHostelForm" style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label>Hostel Name</label>
+                        <input type="text" id="h_name" required>
+                    </div>
+                    <div style="flex: 1; min-width: 150px;">
+                        <label>Gender Category</label>
+                        <select id="h_gender" required>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1; min-width: 100px;">
+                        <label>Total Rooms</label>
+                        <input type="number" id="h_rooms" required min="1">
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-primary" style="margin-bottom: 5px;">Add Hostel</button>
+                    </div>
+                </form>
+            </div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Hostel Name</th>
+                        <th>Gender</th>
+                        <th>Total Rooms Configured</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="hostelsBody">
+                    <tr><td colspan="4" style="text-align:center;">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script type="module">
+        import { supabase } from '/js/supabase-client.js';
+
+        // Check Admin Auth
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session || session.user.email !== 'admin@hostel.com') {
+            window.location.href = '/index.html';
+        }
+
+        const alertBox = document.getElementById('alertBox');
+        function showAlert(msg, isError=true) {
+            alertBox.style.display = 'block';
+            alertBox.className = `alert ${isError ? 'alert-error' : 'alert-success'}`;
+            alertBox.textContent = msg;
+        }
+
+        async function loadHostels() {
+            const { data, error } = await supabase.from('hostels').select('*').order('name');
+            const tbody = document.getElementById('hostelsBody');
+            if (error) {
+                tbody.innerHTML = `<tr><td colspan="4" style="color:red;">Error loading hostels: ${error.message}</td></tr>`;
+                return;
+            }
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No hostels found.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            data.forEach(h => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${h.name}</td>
+                    <td>${h.gender_category}</td>
+                    <td>${h.total_rooms}</td>
+                    <td>
+                        <button class="btn" style="background:#ef4444; padding: 5px 10px;" onclick="deleteHostel('${h.id}')">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.getElementById('addHostelForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('h_name').value;
+            const gender = document.getElementById('h_gender').value;
+            const rooms = parseInt(document.getElementById('h_rooms').value);
+
+            const { error } = await supabase.from('hostels').insert([{ name, gender_category: gender, total_rooms: rooms }]);
+            if (error) {
+                showAlert(error.message);
+            } else {
+                showAlert('Hostel added successfully', false);
+                e.target.reset();
+                loadHostels();
+            }
+        });
+
+        window.deleteHostel = async (id) => {
+            if(!confirm('Delete this hostel? All associated rooms will also be deleted.')) return;
+            const { error } = await supabase.from('hostels').delete().eq('id', id);
+            if(error) showAlert(error.message);
+            else { showAlert('Deleted', false); loadHostels(); }
+        }
+
+        loadHostels();
+    </script>
+</body>
+</html>

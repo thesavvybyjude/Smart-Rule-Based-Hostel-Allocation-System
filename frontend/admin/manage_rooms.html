@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Rooms | Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="main-header">
+        <div class="container header-content">
+            <a href="/index.html" class="logo">Hostel Allocation</a>
+            <nav class="main-nav">
+                <a href="/admin/dashboard.html">Dashboard</a>
+                <a href="/admin/manage_hostels.html">Hostels</a>
+                <a href="/admin/manage_rooms.html" style="font-weight:bold;">Rooms</a>
+                <span class="nav-user">Welcome, Admin</span>
+            </nav>
+        </div>
+    </header>
+    
+    <main class="container main-content">
+        <div class="card">
+            <h1>Manage Rooms</h1>
+            
+            <div id="alertBox" class="alert" style="display: none;"></div>
+            
+            <div style="margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 5px;">
+                <h3>Add New Room</h3>
+                <form id="addRoomForm" style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label>Hostel</label>
+                        <select id="r_hostel" required></select>
+                    </div>
+                    <div style="flex: 1; min-width: 150px;">
+                        <label>Room Number</label>
+                        <input type="text" id="r_number" required>
+                    </div>
+                    <div style="flex: 1; min-width: 100px;">
+                        <label>Capacity</label>
+                        <input type="number" id="r_capacity" required min="1">
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-primary" style="margin-bottom: 5px;">Add Room</button>
+                    </div>
+                </form>
+            </div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Hostel</th>
+                        <th>Room No</th>
+                        <th>Capacity</th>
+                        <th>Occupied</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="roomsBody">
+                    <tr><td colspan="5" style="text-align:center;">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script type="module">
+        import { supabase } from '/js/supabase-client.js';
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session || session.user.email !== 'admin@hostel.com') window.location.href = '/index.html';
+
+        const alertBox = document.getElementById('alertBox');
+        function showAlert(msg, isError=true) {
+            alertBox.style.display = 'block';
+            alertBox.className = `alert ${isError ? 'alert-error' : 'alert-success'}`;
+            alertBox.textContent = msg;
+        }
+
+        async function init() {
+            // Load hostels for select
+            const { data: hostels } = await supabase.from('hostels').select('id, name').order('name');
+            const select = document.getElementById('r_hostel');
+            select.innerHTML = '<option value="">-- Select Hostel --</option>';
+            if(hostels) {
+                hostels.forEach(h => {
+                    select.innerHTML += `<option value="${h.id}">${h.name}</option>`;
+                });
+            }
+            loadRooms();
+        }
+
+        async function loadRooms() {
+            const { data, error } = await supabase.from('rooms').select('*, hostels(name)').order('room_number');
+            const tbody = document.getElementById('roomsBody');
+            if (error) {
+                tbody.innerHTML = `<tr><td colspan="5" style="color:red;">Error: ${error.message}</td></tr>`;
+                return;
+            }
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No rooms found.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            data.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${r.hostels.name}</td>
+                    <td>${r.room_number}</td>
+                    <td>${r.capacity}</td>
+                    <td>${r.occupied_slots}</td>
+                    <td>
+                        <button class="btn" style="background:#ef4444; padding: 5px 10px;" onclick="deleteRoom('${r.id}')">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.getElementById('addRoomForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const hostel_id = document.getElementById('r_hostel').value;
+            const room_number = document.getElementById('r_number').value;
+            const capacity = parseInt(document.getElementById('r_capacity').value);
+
+            const { error } = await supabase.from('rooms').insert([{ hostel_id, room_number, capacity }]);
+            if (error) showAlert(error.message);
+            else { showAlert('Room added', false); e.target.reset(); loadRooms(); }
+        });
+
+        window.deleteRoom = async (id) => {
+            if(!confirm('Delete this room?')) return;
+            const { error } = await supabase.from('rooms').delete().eq('id', id);
+            if(error) showAlert(error.message);
+            else { showAlert('Deleted', false); loadRooms(); }
+        }
+
+        init();
+    </script>
+</body>
+</html>

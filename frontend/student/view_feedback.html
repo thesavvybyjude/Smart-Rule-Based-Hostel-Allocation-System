@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Feedback | Student</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="main-header">
+        <div class="container header-content">
+            <a href="/index.html" class="logo">Hostel Allocation</a>
+            <nav class="main-nav">
+                <a href="/student/dashboard.html">Dashboard</a>
+                <a href="/student/feedback.html">Submit Feedback</a>
+                <a href="/student/view_feedback.html" style="font-weight:bold;">My Feedback</a>
+                <span class="nav-user">Student</span>
+            </nav>
+        </div>
+    </header>
+    
+    <main class="container main-content">
+        <div class="card">
+            <h1>My Feedback History</h1>
+            <div id="alertBox" class="alert" style="display: none;"></div>
+
+            <div id="feedbackContainer" style="margin-top: 20px;">
+                <p>Loading...</p>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { supabase } from '/js/supabase-client.js';
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session || session.user.email === 'admin@hostel.com') window.location.href = '/index.html';
+
+        async function loadFeedback() {
+            const container = document.getElementById('feedbackContainer');
+            const { data, error } = await supabase.from('feedback')
+                .select('*')
+                .eq('student_id', session.user.id)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                container.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+                return;
+            }
+            if (data.length === 0) {
+                container.innerHTML = '<p>You have not submitted any feedback yet.</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            data.forEach(f => {
+                const color = f.status === 'resolved' ? 'green' : (f.status === 'pending' ? 'orange' : 'gray');
+                container.innerHTML += `
+                    <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom: 10px;">
+                            <h3 style="margin:0;">${f.subject} <span style="font-size:0.8rem; background:#f1f5f9; padding:3px 6px; border-radius:4px; font-weight:normal;">${f.type}</span></h3>
+                            <span style="color:${color}; font-weight:bold; text-transform:capitalize;">${f.status}</span>
+                        </div>
+                        <p style="margin: 0 0 10px 0; color: #475569;">${f.message}</p>
+                        
+                        ${f.admin_response ? `
+                            <div style="background: #f0fdf4; border-left: 4px solid #16a34a; padding: 10px; margin-top: 10px;">
+                                <strong>Admin Reply:</strong>
+                                <p style="margin: 5px 0 0 0;">${f.admin_response}</p>
+                            </div>
+                        ` : ''}
+                        <div style="font-size:0.8rem; color:#94a3b8; margin-top: 10px;">Submitted: ${new Date(f.created_at).toLocaleString()}</div>
+                    </div>
+                `;
+            });
+        }
+
+        loadFeedback();
+    </script>
+</body>
+</html>

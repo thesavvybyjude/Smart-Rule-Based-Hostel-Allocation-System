@@ -61,6 +61,8 @@ ALTER TABLE allocations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
 
 -- Create policies for 'students' table
+-- A student can insert their own record upon registration
+CREATE POLICY student_insert ON students FOR INSERT WITH CHECK (auth.uid() = id);
 -- A student can read and update ONLY their own record
 CREATE POLICY student_select ON students FOR SELECT USING (auth.uid() = id);
 CREATE POLICY student_update ON students FOR UPDATE USING (auth.uid() = id);
