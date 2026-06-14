@@ -12,6 +12,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'frontend')));
 
 // Mock Vercel serverless functions locally
+app.all('/api/config', (req, res) => require('./api/config')(req, res));
 app.all('/api/allocation/run', (req, res) => require('./api/allocation/run')(req, res));
 app.all('/api/hostels', (req, res) => require('./api/hostels/index')(req, res));
 app.all('/api/rooms', (req, res) => require('./api/rooms/index')(req, res));
